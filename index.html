@@ -1,0 +1,2253 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>TRANCE BLOOM</title>
+<meta name="description" content="手を動かすと、音と光がひらく。トランスと瞑想の空間。スマホ・PC・Meta Quest（VR）のブラウザで。">
+<meta property="og:type" content="website"><meta property="og:title" content="TRANCE BLOOM"><meta property="og:description" content="手を動かすと、音と光がひらく。トランスと瞑想の空間。スマホ・PC・Meta Quest（VR）のブラウザで。">
+<meta property="og:url" content="https://sotachan-7sai.github.io/trance-bloom/"><meta property="og:image" content="https://sotachan-7sai.github.io/trance-bloom/ogp.jpg"><meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#14001f">
+<link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="icon.png">
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;color:#fff}
+canvas{display:block;touch-action:none}
+#ui{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:16px;box-sizing:border-box;background:radial-gradient(circle at 50% 42%,rgba(60,0,90,.55),rgba(0,0,0,.9));transition:opacity .8s;z-index:5}
+#ui.hide{opacity:0;pointer-events:none}
+h1{margin:0;font-weight:900;letter-spacing:.28em;font-size:clamp(30px,6vw,72px);background:linear-gradient(90deg,#ff4fd8,#ffd84f,#4ff2ff,#a64fff,#ff4fd8);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:hue 8s linear infinite}
+@keyframes hue{to{background-position:200% 0}}
+.sub{opacity:.85;font-size:15px;letter-spacing:.12em;text-align:center}
+.row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+button{font:inherit;font-size:17px;padding:13px 26px;border-radius:999px;border:2px solid rgba(255,255,255,.55);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+button:hover:not(:disabled){background:rgba(255,255,255,.2)}
+button:disabled{opacity:.45;cursor:default}
+#help{max-width:840px;font-size:13.5px;line-height:1.8;background:rgba(0,0,0,.42);padding:14px 22px;border-radius:14px;opacity:.93}
+#help b{color:#ffd84f}
+#hud{position:fixed;left:14px;bottom:12px;font-size:13px;opacity:.8;pointer-events:none;text-shadow:0 0 6px #000;z-index:3}
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);padding:8px 18px;border-radius:999px;background:rgba(0,0,0,.6);font-size:15px;opacity:0;transition:opacity .35s;pointer-events:none;z-index:6;white-space:nowrap}
+#toast.on{opacity:1}
+#corner{position:fixed;right:14px;bottom:12px;display:none;gap:10px;z-index:4}
+#corner button{font-size:14px;padding:9px 16px}
+#corner{flex-wrap:wrap;justify-content:flex-end}
+#mhelp{display:none;max-width:620px;font-size:14px;line-height:1.8;background:rgba(0,0,0,.42);padding:12px 18px;border-radius:14px}
+#mhelp b{color:#ffd84f}
+#songName{min-height:1.2em;color:#ffd84f}
+.touch #mhelp{display:block}.touch #help{display:none}
+@media (max-width:760px),(max-height:560px){
+  #ui{justify-content:flex-start;overflow-y:auto;padding-top:28px}
+  #help{font-size:12px;padding:10px 14px}
+  button{font-size:15px;padding:11px 18px}
+  #hud{display:none}
+  #toast{white-space:normal;max-width:90vw;text-align:center;font-size:14px}
+  #corner{left:8px;right:8px;bottom:8px}
+  #corner button{font-size:13px;padding:8px 12px}
+}
+</style>
+</head>
+<body>
+<div id="ui">
+  <h1>TRANCE BLOOM</h1>
+  <div class="sub">手を動かすと、音と光がひらく。トランスと瞑想の空間 ── スマホ・PC・Meta Quest（VR）で</div>
+  <div id="vrMsg" class="sub" style="display:none;color:#ffd84f;max-width:820px;line-height:1.7"></div>
+  <div class="row"><button id="pcBtn">▶ はじめる（音が出ます）</button><button id="vrBtn" disabled>🥽 VR を確かめています…</button></div>
+  <div class="row"><button id="songBtn0">🎵 曲を選ぶ（なくても遊べます）</button></div><div id="songName" class="sub"></div>
+  <div id="mhelp"><b>スマホ</b>　タップ = 鐘と波紋（上のほうほど高い音）／ 指でなぞる = 見まわす ／ 長押し = 星くずを吸いよせる<br>
+  <b>📱</b> = スマホを傾けて見まわす ／ <b>☰</b> = メニュー（世界・🧪 GLSL の世界・🎲 バリエーション・🎆 ショー・旅 など）／ <b>🎵</b> = スマホの中の曲で演出<br>
+  音が出ます（iPhone は、消音モードだと音が出ないことがあります）。Meta Quest のブラウザで開くと、VR に入れます</div>
+  <div id="help">
+    <b>VR の中</b>（Quest のコントローラー）<br>
+    トリガー = その手の場所で鐘が鳴り、波紋がひろがる（手の高さ = 音の高さ。左手は 1 オクターブ低い）／ 引いたまま上下 = ハープのように続けて鳴る<br>
+    握る = 星くずを手に吸いよせる・中へ進む ／ 両手で握って広げる・せばめる = 万華鏡の枚数（くっつけると万華鏡なし）／ 手を速く振る = 風の音と光の尾 ／ じっと見つめる = そこに光の花が咲く<br>
+    右スティック ←→ = 音色 ／ ↑↓ = 響き ／ 押しこむ = ズーム（おまかせ → 中へ進む → 遠ざかる → 止める）・ 左スティック ←→ = 色 ／ ↑↓ = 流れの速さ ／ 押しこむ = 世界を次へ<br>
+    A = 正面で光が爆ぜる ／ <b>B = メニュー</b>（世界・ズーム・虚数の花・鼓動・ループ・空中の鐘・鏡の分身・トンネル・星くずの形・呼吸の玉・旅・曼荼羅を正面に）<br>
+    X = ループ（録る → 回す → 重ねる。長押し = 消す）／ Y = 鼓動（切 → 60 → 90 → 128 → 138）<br>
+    <b>🎆 ショー</b>（拍と小節で場面が変わり、レーザー・結晶・花火・紙吹雪・文字・見せ場が起こる）: VR = メニュー（B）のいちばん上 ／ PC = E = 入切・U = 曲をえらぶ（ドラッグでも）・Shift+U = 曲を止める・R = 見せ場（いますぐ）<br>
+    <b>Enter</b>（か V）= VR に入る（Meta Quest のブラウザで）／ <b>🎵 曲を選ぶ</b> = 自分の端末の曲で演出（VR の中で使う曲は、入る前に選んでおく）<br>
+    <b>PC の画面</b> クリック = 鐘と波紋（マウスの高さ = 音の高さ）・押したまま動かす = 続けて鳴る ／ 右ボタンを押したまま = 星くずを吸いよせる・中へ進む<br>
+    M = メニュー ／ W = 世界 ／ Z = ズーム ／ I = 虚数の花 ／ C = 曼荼羅を正面に ／ 1〜4 = 音色 ／ P = 色 ／ K = 万華鏡 ／ Space = 光が爆ぜる ／ B = 鼓動 ／ L = ループ（Shift+L = 消す）／ O = 空中の鐘 ／ N = 鏡の分身 ／ T = トンネル ／ S = 星くずの形 ／ Y = 呼吸の玉 ／ G = 見つめると咲く ／ J = 旅 ／ F = 432⇄528Hz ／ A = 自動演奏 ／ ←→ = 見まわす ／ H = この説明
+  </div>
+</div>
+<div id="hud"></div><div id="toast"></div>
+<div id="corner"><button id="menuBtn">☰ メニュー</button><button id="songBtn">🎵 曲</button><button id="gyroBtn" style="display:none">📱 傾けて見回す</button><button id="helpBtn">？ 説明</button><button id="vrBtn2">🥽 VR に入る</button></div>
+<script type="module">
+// TRANCE BLOOM（仮）— Quest のコントローラーの位置とトリガーで、音色・波紋・星くずが変わる、瞑想とトランスの VR 空間
+// 10/11 そうたさん「これみたいな トランス効果のあるVRアプリをつくりたいです。metaqwestのコントローラーの位置やトリガーによっていろいろ音色ががわったり パーティクルやエフェクトが掛かる空間をつくってください」
+// 参考にしたのは、体験の向き（なぞると波紋と鐘・液体のしま模様・星くず・432/528Hz・何もしないと自動で鳴る）だけ。絵・音・コードは、ここで一から作ったもの
+// 動かし方: start_trance_bloom.bat（デスクトップのキャラが起きていれば NET DIVE の係 127.0.0.1:48840 から、いなければ小さな係を 127.0.0.1:48857 で立てて、Chrome で開く）→「VR に入る」。PC の画面だけでも遊べる
+const $ = (id) => document.getElementById(id);
+const QS = new URLSearchParams(location.search), APP = false, VRQ = false;   // ↓ Web 版（tools\build_web.js が書き出したもの）
+const WEB = true, QUEST = /OculusBrowser|Quest|Pacific/i.test(navigator.userAgent), TOUCH = !QUEST && matchMedia('(pointer: coarse)').matches, LITE = TOUCH || QUEST || QS.has('lite');   // スマホ・Quest は軽めに
+if (TOUCH) document.documentElement.classList.add('touch');
+//   // ?app=1 = デスクトップのアプリの窓（ふつう）／ ?vr=1 = VR で開いた
+let T;
+for (const u of ['./vendor/three.module.js', '/node_modules/three/build/three.module.js', 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js']){ try { T = await import(u); break; } catch (_) {} }   // three: 手もと → NET DIVE の係（48840）から開いたとき → ネット
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, k) => a + (b - a) * k, rnd = (a, b) => a + Math.random() * (b - a);
+let frameErr = 0, t = 0, started = false;
+window.__frameErr = () => frameErr;
+
+/* ============ 1. 画面 ============ */
+const renderer = new T.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio, LITE ? 1.5 : 2)); if (QUEST) renderer.xr.setFoveation?.(1); renderer.setSize(innerWidth, innerHeight);
+renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor');
+renderer.toneMapping = T.NoToneMapping;
+document.body.prepend(renderer.domElement);
+const scene = new T.Scene();
+const camera = new T.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 400);
+camera.position.set(0, 1.6, 0);
+const rig = new T.Group(); rig.add(camera); scene.add(rig);
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+const xrOn = () => renderer.xr.isPresenting;
+const head = new T.Vector3(0, 1.6, 0), headFwd = new T.Vector3(0, 0, -1), headUp = new T.Vector3(0, 1, 0);
+function headPose(){   // 頭の位置と向き（VR = ゴーグル ／ PC = カメラ）
+  const c = xrOn() ? renderer.xr.getCamera() : camera;
+  head.setFromMatrixPosition(c.matrixWorld);
+  headFwd.set(0, 0, -1).transformDirection(c.matrixWorld); headUp.set(0, 1, 0).transformDirection(c.matrixWorld);
+}
+const WHITE = new T.Color(1, 1, 1), ZERO = new T.Vector3();
+
+/* ============ 2. 色の組（なめらかに切りかわる） ============ */
+// 色 = a + b × cos(2π(c × x + d))。5 組とも、ここで決めたもの
+const PALS = [
+  {name:'紫の深海', a:[0.42, 0.22, 0.62], b:[0.45, 0.32, 0.38], c:[1.0, 1.0, 1.0], d:[0.78, 0.92, 0.30]},
+  {name:'酸の緑', a:[0.55, 0.62, 0.40], b:[0.45, 0.38, 0.50], c:[1.0, 1.0, 1.0], d:[0.25, 0.05, 0.75]},
+  {name:'夕焼けの溶岩', a:[0.62, 0.34, 0.36], b:[0.40, 0.36, 0.32], c:[1.0, 1.0, 1.0], d:[0.00, 0.15, 0.32]},
+  {name:'電気の宇宙', a:[0.38, 0.42, 0.62], b:[0.62, 0.58, 0.40], c:[1.0, 1.0, 1.0], d:[0.30, 0.22, 0.18]},
+  {name:'虹の渦', a:[0.5, 0.5, 0.5], b:[0.5, 0.5, 0.5], c:[1.0, 1.0, 1.0], d:[0.0, 0.33, 0.67]},
+];
+const PU = {uPa:{value:new T.Vector3()}, uPb:{value:new T.Vector3()}, uPc:{value:new T.Vector3()}, uPd:{value:new T.Vector3()}};
+const palWant = {a:new T.Vector3(), b:new T.Vector3(), c:new T.Vector3(), d:new T.Vector3()};
+let palIdx = 0;
+function setPal(i, instant){
+  palIdx = (i + PALS.length) % PALS.length; const p = PALS[palIdx];
+  palWant.a.fromArray(p.a); palWant.b.fromArray(p.b); palWant.c.fromArray(p.c); palWant.d.fromArray(p.d);
+  if (instant){ PU.uPa.value.copy(palWant.a); PU.uPb.value.copy(palWant.b); PU.uPc.value.copy(palWant.c); PU.uPd.value.copy(palWant.d); }
+}
+setPal(0, true);
+function palTick(dt){ const k = 1 - Math.exp(-dt * 2.2); PU.uPa.value.lerp(palWant.a, k); PU.uPb.value.lerp(palWant.b, k); PU.uPc.value.lerp(palWant.c, k); PU.uPd.value.lerp(palWant.d, k); }
+function palCol(x, out){
+  const a = PU.uPa.value, b = PU.uPb.value, c = PU.uPc.value, d = PU.uPd.value, f = (A, B, C, D) => clamp(A + B * Math.cos(6.28318 * (C * x + D)), 0, 1);
+  return out.setRGB(f(a.x, b.x, c.x, d.x), f(a.y, b.y, c.y, d.y), f(a.z, b.z, c.z, d.z));
+}
+const PAL_GLSL = `uniform vec3 uPa, uPb, uPc, uPd;
+vec3 pal(float x){ return clamp(uPa + uPb * cos(6.28318 * (uPc * x + uPd)), 0., 1.); }`;
+
+/* ============ 3. 空（液体のしま模様が流れる天球。波紋が来ると、その方向に輪がひろがる） ============ */
+// 3D シンプレックスノイズ: Ian McEwan / Ashima Arts（MIT ライセンス）
+const NOISE_GLSL = `
+vec3 mod289(vec3 x){ return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 mod289(vec4 x){ return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 permute(vec4 x){ return mod289(((x * 34.0) + 10.0) * x); }
+vec4 taylorInvSqrt(vec4 r){ return 1.79284291400159 - 0.85373472095314 * r; }
+float snoise(vec3 v){
+  const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0); const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i = floor(v + dot(v, C.yyy)); vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz); vec3 l = 1.0 - g; vec3 i1 = min(g.xyz, l.zxy); vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + C.xxx; vec3 x2 = x0 - i2 + C.yyy; vec3 x3 = x0 - D.yyy;
+  i = mod289(i);
+  vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 0.142857142857; vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z * ns.z); vec4 x_ = floor(j * ns.z); vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ * ns.x + ns.yyyy; vec4 y = y_ * ns.x + ns.yyyy; vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy); vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0) * 2.0 + 1.0; vec4 s1 = floor(b1) * 2.0 + 1.0; vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy; vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+  vec3 p0 = vec3(a0.xy, h.x); vec3 p1 = vec3(a0.zw, h.y); vec3 p2 = vec3(a1.xy, h.z); vec3 p3 = vec3(a1.zw, h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.5 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0); m = m * m;
+  return 105.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
+}`;
+const RIPN = 12;
+const SKY = {uFT:{value:0}, uT:{value:0}, uDens:{value:1}, uKal:{value:0}, uBurst:{value:0}, uBreath:{value:0.5}, uWarp:{value:0}, uKick:{value:0}, uDim:{value:1}, uZoom:{value:0}, uPolar:{value:0}, uSpiral:{value:0}, uFlower:{value:0}, uJulia:{value:0}, uJz:{value:0}, uSky:{value:1}, uGl:{value:0}, uCube:{value:null},
+  uJc:{value:new T.Vector2(0.7885, 0)}, uFrame:{value:new T.Matrix3().set(1, 0, 0, 0, 1, 0, 0, 0, -1)},
+  uRip:{value:Array.from({length:RIPN}, () => new T.Vector4(0, 1, 0, -99))}, uRipC:{value:Array.from({length:RIPN}, () => new T.Vector3())}, ...PU};
+const sky = new T.Mesh(new T.SphereGeometry(90, 64, 32), new T.ShaderMaterial({uniforms:SKY, side:T.BackSide, depthWrite:false, depthTest:false,
+  vertexShader:`varying vec3 vDir; void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+  fragmentShader:`precision highp float;
+uniform float uFT, uT, uDens, uKal, uBurst, uBreath, uWarp, uKick, uDim, uZoom, uPolar, uSpiral, uFlower, uJulia, uJz, uSky, uGl;
+uniform samplerCube uCube;
+uniform vec2 uJc; uniform mat3 uFrame; uniform vec4 uRip[${RIPN}]; uniform vec3 uRipC[${RIPN}];
+varying vec3 vDir;
+${PAL_GLSL}
+${NOISE_GLSL}
+float fbm3(vec3 p){ float s = 0., a = .5; for (int i = 0; i < 3; i++){ s += a * snoise(p); p = p * 2.07 + 17.1; a *= .5; } return s; }
+float fbm4(vec3 p){ float s = 0., a = .5; for (int i = 0; i < 4; i++){ s += a * snoise(p); p = p * 2.03 + 11.7; a *= .5; } return s; }
+void main(){
+  if (uGl > .995){ gl_FragColor = vec4(textureCube(uCube, normalize(vDir)).rgb * (1. + uKick * .15) * uDim, 1.); return; }   // 🧪 GLSL の世界だけ（立方体に描いておいた絵を貼る）
+  if (uSky < .004 && uGl < .004){ gl_FragColor = vec4(0., 0., 0., 1.); return; }   // 粒だけの世界: 空は描かない
+  vec3 d0 = normalize(vDir), l = d0 * uFrame;   // 正面（曼荼羅の中心）から見た方向: z = 正面
+  float th = acos(clamp(l.z, -1., 1.)), ph0 = atan(l.y, l.x), ph = ph0;
+  if (uKal > 1.5){ float seg = 6.28318 / uKal; ph = abs(mod(ph, seg) - seg * .5); }   // 万華鏡: 正面を中心に、uKal 枚に折りたたむ
+  vec3 d = uFrame * vec3(sin(th) * cos(ph), sin(th) * sin(ph), cos(th));
+  float u = log(tan(clamp(th, .002, 3.1396) * .5)), uf = u - uZoom, phs = ph + uSpiral * u;   // 虚数の平面 w = tan(θ/2)·e^{iφ} の log: 正面 −∞ → 真後ろ +∞（あなたを突き抜けるトンネル）
+  float rip = 0.; vec3 rc = vec3(0.); vec3 p = mix(d * 1.55, vec3(cos(phs) * 1.3, sin(phs) * 1.3, uf * 1.1), uPolar);
+  for (int i = 0; i < ${RIPN}; i++){   // 波紋: 鳴った場所の方向から、輪がひろがる
+    float age = uT - uRip[i].w; if (age < 0. || age > 7.) continue;
+    float ang = acos(clamp(dot(d0, uRip[i].xyz), -1., 1.));
+    float w = exp(-pow((ang - age * .75) * 6.5, 2.)) * exp(-age * .55);
+    rip += w; rc += uRipC[i] * w; p += uRip[i].xyz * w * .3;
+  }
+  float ft = uFT;
+  vec3 q = vec3(fbm3(p + vec3(0., ft * .07, 0.)), fbm3(p + vec3(5.2, 1.3, ft * .05)), fbm3(p + vec3(2.1, ft * .06, 7.7)));
+  float v = fbm4(p + q * (1.35 + uWarp * 1.2) + vec3(ft * .03, 0., -ft * .02));
+  float s = v * 3.2 * uDens + length(q) * 1.3 - ft * .11 + rip * 1.4 + uBurst * 1.8;
+  s += uKick * .22;
+  float band = .5 + .5 * sin(s * 6.28318);
+  vec3 col = pal(s * .32 + uT * .008);
+  col *= .14 + .95 * smoothstep(.2, .95, band);   // しまの間は暗く（星くずが見えるように）
+  col *= .74 + .26 * uBreath;   // 10 秒で 1 回の呼吸
+  if (uFlower > .01){   // 位相の花（シンメトリー）: 虚数の平面で、花びらと輪が干渉する。流れとともに、中から湧きつづける
+    float n = max(uKal, 6.), pet = cos(ph0 * n + sin(uf * 2.1) * 1.2), ring = .5 + .5 * cos(uf * 5.65 + pet * 1.4 + v * 2.);
+    float ln = smoothstep(.06, 0., abs(fract(uf * .9 + pet * .22) - .5));
+    vec3 fc = pal(uf * .12 + pet * .15 + uT * .015) * (.1 + .95 * smoothstep(.25, .9, ring)) + pal(uf * .2 + .5) * ln * .7;
+    col = mix(col, fc * (.78 + .22 * uBreath), uFlower);
+  }
+  col += rc * .85 + pal(s * .5 + .3) * uBurst * .35;
+  col += pal(uT * .02 + .2) * smoothstep(.1, 0., th) * max(uPolar, uFlower) * 1.1;   // トンネルの奥の光
+  if (uJulia > .01){   // 虚数の花（ジュリア集合）: z → z² + c をくり返し、外へ逃げる速さで色をつける
+    vec2 z = tan(min(th, 3.) * .5) * 3.2 * exp(-uJz) * vec2(cos(ph), sin(ph)); float it = 0., m2 = 0.;
+    for (int i = 0; i < 56; i++){ z = vec2(z.x * z.x - z.y * z.y, 2. * z.x * z.y) + uJc; m2 = dot(z, z); if (m2 > 64.) break; it += 1.; }
+    float sn = it - log2(log2(max(m2, 1.0001))) + 4., inside = step(55.5, it);
+    vec3 jc = pal(sn * .045 + uT * .02) * (1. - inside) * smoothstep(3., 18., sn) * 1.35 + pal(uT * .03 + .6) * inside * .25;
+    col = mix(col, jc, uJulia * (.3 + .7 * max(inside, smoothstep(3., 12., sn))) * smoothstep(2.9, 2.2, th));   // すぐ逃げる外側はうすく（下の空が見える）
+  }
+  col *= mix(.16, 1., smoothstep(-.75, .05, d0.y));   // 足もとの方は暗く（床の感じ）
+  col *= (1. + uKick * .2) * uSky;   // 鼓動で明るく脈打つ ／ 世界によっては、ほぼ消す
+  if (uGl > .004) col = mix(col, textureCube(uCube, d0).rgb * (1. + uKick * .15), uGl);   // 🧪 GLSL の世界へ、なめらかに
+  gl_FragColor = vec4(col * uDim, 1.);   // 旅の始まり・ショーのため は暗め
+}`}));
+sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
+
+// 足もとの曼荼羅（ほんのり光る輪。立っている場所の目じるし）
+const FLOOR = {uT:SKY.uT, uBreath:SKY.uBreath, uE:{value:0}, uKick:SKY.uKick, ...PU};
+const floorM = new T.Mesh(new T.CircleGeometry(2.8, 128), new T.ShaderMaterial({uniforms:FLOOR, transparent:true, depthWrite:false, blending:T.AdditiveBlending,
+  vertexShader:`varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+  fragmentShader:`uniform float uT, uBreath, uE, uKick; varying vec2 vP;
+${PAL_GLSL}
+void main(){
+  float r = length(vP), a = atan(vP.y, vP.x);
+  float ring = pow(.5 + .5 * cos(r * 17. - uT * 1.1), 7.);
+  float pet = .45 + .55 * pow(.5 + .5 * cos(a * 12. + uT * .25 + r * 2.), 3.);
+  float m = ring * pet * smoothstep(2.8, 1.7, r) * smoothstep(.05, .45, r);
+  gl_FragColor = vec4(pal(r * .22 + uT * .03) * m * (.22 + .3 * uBreath + uE * .9 + uKick * .5), 1.);
+}`}));
+floorM.rotation.x = -Math.PI / 2; floorM.position.y = 0.005; scene.add(floorM);
+
+/* ============ 4. 星くず（まわりをゆっくり流れる光の粒。握った手に吸いよせられ、波紋に押される） ============ */
+const DN = LITE ? 9000 : 18000, DC = new T.Vector3(0, 1.4, 0);
+const dPos = new Float32Array(DN * 3), dVel = new Float32Array(DN * 3), dSeed = new Float32Array(DN), dEn = new Float32Array(DN);
+function dSpawn(i){
+  const r = 1.3 + Math.pow(Math.random(), 0.75) * 21, u = Math.random() * 2 - 1, th = Math.random() * 6.28318, s = Math.sqrt(1 - u * u), i3 = i * 3;
+  dPos[i3] = DC.x + r * s * Math.cos(th); dPos[i3 + 1] = DC.y + r * u * 0.7; dPos[i3 + 2] = DC.z + r * s * Math.sin(th);
+  dVel[i3] = dVel[i3 + 1] = dVel[i3 + 2] = 0;
+}
+for (let i = 0; i < DN; i++){ dSpawn(i); dSeed[i] = Math.random(); }
+const dGeo = new T.BufferGeometry();
+dGeo.setAttribute('position', new T.BufferAttribute(dPos, 3).setUsage(T.DynamicDrawUsage));
+dGeo.setAttribute('aSeed', new T.BufferAttribute(dSeed, 1));
+dGeo.setAttribute('aEn', new T.BufferAttribute(dEn, 1).setUsage(T.DynamicDrawUsage));
+const DU = {uT:SKY.uT, uPix:{value:600}, uKick:SKY.uKick, uBoost:{value:1}, uFar:{value:1}, ...PU};
+const DOT_FRAG = `varying vec3 vC; void main(){ float d = length(gl_PointCoord - .5); float a = smoothstep(.5, 0., d); a *= a; gl_FragColor = vec4(vC * a, 1.); }`;
+const dust = new T.Points(dGeo, new T.ShaderMaterial({uniforms:DU, transparent:true, depthWrite:false, blending:T.AdditiveBlending,
+  vertexShader:`attribute float aSeed; attribute float aEn; uniform float uT, uPix, uKick, uBoost, uFar; varying vec3 vC;
+${PAL_GLSL}
+void main(){
+  vec4 mv = modelViewMatrix * vec4(position, 1.); gl_Position = projectionMatrix * mv;
+  float tw = .55 + .45 * sin(uT * (.7 + aSeed * 2.6) + aSeed * 50.);
+  float fb = mix(1., uFar, smoothstep(3., 9., -mv.z));   // ショーの形: 遠い粒だけ大きく明るく
+  gl_PointSize = clamp((.016 + aSeed * .022) * (1. + aEn * 2. + uKick * .5) * uBoost * fb * uPix / -mv.z, 1., 64.);
+  vC = pal(aSeed * .7 + length(position) * .035 + uT * .015) * (.45 + aEn * 1.8) * tw * uBoost * fb;
+}`, fragmentShader:DOT_FRAG}));
+dust.frustumCulled = false; scene.add(dust);
+
+/* ============ 5. 光の粒（手からこぼれる） ============ */
+const SN = 4000, sPos = new Float32Array(SN * 3), sVel = new Float32Array(SN * 3), sCol = new Float32Array(SN * 3), sLife = new Float32Array(SN), sMax = new Float32Array(SN).fill(1);
+let sHead = 0;
+const sGeo = new T.BufferGeometry();
+sGeo.setAttribute('position', new T.BufferAttribute(sPos, 3).setUsage(T.DynamicDrawUsage));
+sGeo.setAttribute('aCol', new T.BufferAttribute(sCol, 3).setUsage(T.DynamicDrawUsage));
+sGeo.setAttribute('aLife', new T.BufferAttribute(sLife, 1).setUsage(T.DynamicDrawUsage));
+const sparks = new T.Points(sGeo, new T.ShaderMaterial({uniforms:{uPix:DU.uPix}, transparent:true, depthWrite:false, blending:T.AdditiveBlending,
+  vertexShader:`attribute vec3 aCol; attribute float aLife; uniform float uPix; varying vec3 vC;
+void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); gl_Position = projectionMatrix * mv;
+  float l = max(aLife, 0.); gl_PointSize = l > 0. ? clamp(.026 * (.4 + l) * uPix / -mv.z, 1., 48.) : 0.; vC = aCol * (.35 + l * 1.4); }`, fragmentShader:DOT_FRAG}));
+sparks.frustumCulled = false; scene.add(sparks);
+const _e = new T.Vector3();
+function emit(p, v, col, n, spread, life){
+  for (let k = 0; k < n; k++){
+    const i = sHead, i3 = i * 3; sHead = (sHead + 1) % SN;
+    _e.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1).normalize().multiplyScalar(spread * (0.3 + Math.random()));
+    sPos[i3] = p.x; sPos[i3 + 1] = p.y; sPos[i3 + 2] = p.z;
+    sVel[i3] = v.x * 0.35 + _e.x; sVel[i3 + 1] = v.y * 0.35 + _e.y; sVel[i3 + 2] = v.z * 0.35 + _e.z;
+    sCol[i3] = col.r; sCol[i3 + 1] = col.g; sCol[i3 + 2] = col.b; sLife[i] = 1; sMax[i] = (life || 1.4) * (0.6 + Math.random() * 0.8);
+  }
+}
+function sparkTick(dt){
+  const damp = Math.exp(-dt * 1.2);
+  for (let i = 0; i < SN; i++){
+    if (sLife[i] <= 0) continue;
+    const i3 = i * 3; sLife[i] -= dt / sMax[i];
+    sVel[i3] *= damp; sVel[i3 + 1] = sVel[i3 + 1] * damp + 0.12 * dt; sVel[i3 + 2] *= damp;   // ふわっと上へ
+    sPos[i3] += sVel[i3] * dt; sPos[i3 + 1] += sVel[i3 + 1] * dt; sPos[i3 + 2] += sVel[i3 + 2] * dt;
+  }
+  sGeo.attributes.position.needsUpdate = sGeo.attributes.aCol.needsUpdate = sGeo.attributes.aLife.needsUpdate = true;
+}
+
+/* ============ 6. 波紋（鳴った場所から、光の泡がひろがる） ============ */
+const RG = new T.SphereGeometry(1, 48, 24);
+const rips = Array.from({length:RIPN}, () => {
+  const u = {uC:{value:new T.Color()}, uA:{value:0}};
+  const m = new T.Mesh(RG, new T.ShaderMaterial({uniforms:u, transparent:true, depthWrite:false, blending:T.AdditiveBlending, side:T.DoubleSide,
+    vertexShader:`varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader:`uniform vec3 uC; uniform float uA; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1. - abs(dot(normalize(vN), normalize(vV))), 4.); gl_FragColor = vec4(uC * f * uA, 1.); }`}));
+  m.visible = false; m.frustumCulled = false; scene.add(m);
+  return {m, u, born:-99, str:0, pos:new T.Vector3(), speed:1.6};
+});
+let ripNext = 0;
+const _rd = new T.Vector3();
+function addRipple(p, col, str){
+  const idx = ripNext, r = rips[idx]; ripNext = (ripNext + 1) % RIPN;
+  r.born = t; r.str = str; r.pos.copy(p); r.speed = 1.2 + str * 0.9; r.u.uC.value.copy(col);
+  _rd.subVectors(p, head); if (_rd.lengthSq() < 1e-4) _rd.copy(headFwd); _rd.normalize();   // 空に出る輪は、頭から見た方向に
+  SKY.uRip.value[idx].set(_rd.x, _rd.y, _rd.z, t); SKY.uRipC.value[idx].set(col.r * str, col.g * str, col.b * str);
+}
+function ripTick(){
+  for (const r of rips){
+    const age = t - r.born;
+    if (age < 0 || age > 5){ r.m.visible = false; continue; }
+    r.m.visible = true; r.m.position.copy(r.pos); r.m.scale.setScalar(0.04 + age * r.speed); r.u.uA.value = Math.pow(1 - age / 5, 2) * r.str * 0.6;   // 重なっても白くとびすぎないように
+  }
+}
+
+/* ============ 7. 手（光の玉と、光の尾） ============ */
+const haloTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.22, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new T.CanvasTexture(c); })();
+function mkOrb(){
+  const g = new T.Group(), core = new T.Mesh(new T.SphereGeometry(0.018, 20, 12), new T.MeshBasicMaterial({color:0xffffff}));
+  const halo = new T.Sprite(new T.SpriteMaterial({map:haloTex, color:0xffffff, transparent:true, depthWrite:false, blending:T.AdditiveBlending})); halo.scale.setScalar(0.16);
+  g.add(core, halo); g.visible = false; scene.add(g); return {g, core, halo};
+}
+const TN = 44;
+function mkTrail(){
+  const pos = new Float32Array(TN * 2 * 3), al = new Float32Array(TN * 2), idx = [];
+  for (let i = 0; i < TN - 1; i++){ const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  const g = new T.BufferGeometry(); g.setAttribute('position', new T.BufferAttribute(pos, 3).setUsage(T.DynamicDrawUsage)); g.setAttribute('aA', new T.BufferAttribute(al, 1).setUsage(T.DynamicDrawUsage)); g.setIndex(idx);
+  const u = {uC:{value:new T.Color()}};
+  const m = new T.Mesh(g, new T.ShaderMaterial({uniforms:u, transparent:true, depthWrite:false, blending:T.AdditiveBlending, side:T.DoubleSide,
+    vertexShader:`attribute float aA; varying float vA; void main(){ vA = aA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+    fragmentShader:`uniform vec3 uC; varying float vA; void main(){ gl_FragColor = vec4(uC * vA, 1.); }`}));
+  m.frustumCulled = false; m.visible = false; scene.add(m);
+  return {m, g, pos, al, u, hp:Array.from({length:TN}, () => new T.Vector3()), hs:Array.from({length:TN}, () => new T.Vector3()), init:false};
+}
+function mkHand(side){
+  return {side, on:false, inj:false, src:null, pos:new T.Vector3(side === 'left' ? -0.3 : 0.3, 1.2, -0.5), prev:new T.Vector3(), vel:new T.Vector3(), speed:0, q:new T.Quaternion(),
+    trig:false, trigPrev:false, grip:false, stick:[0, 0], stickArm:true, btn:[false, false], btnPrev:[false, false], k:-1, lastNote:-9, emAcc:0,
+    color:new T.Color(1, 1, 1), pulse:0, orb:mkOrb(), trail:mkTrail(), wind:null};
+}
+const hands = [mkHand('left'), mkHand('right')];
+const _side = new T.Vector3();
+function trailTick(h){
+  const tr = h.trail;
+  if (!h.on){ tr.m.visible = false; tr.init = false; return; }
+  tr.m.visible = true;
+  _side.set(1, 0, 0).applyQuaternion(h.q).multiplyScalar(0.03 + Math.min(0.03, h.speed * 0.01));   // 尾の幅の向き = コントローラーの横
+  if (!tr.init){ for (let i = 0; i < TN; i++){ tr.hp[i].copy(h.pos); tr.hs[i].copy(_side); } tr.init = true; }
+  for (let i = TN - 1; i > 0; i--){ tr.hp[i].copy(tr.hp[i - 1]); tr.hs[i].copy(tr.hs[i - 1]); }
+  tr.hp[0].copy(h.pos); tr.hs[0].copy(_side);
+  const glow = clamp(0.12 + h.speed * 0.35 + (h.trig ? 0.35 : 0) + h.pulse * 0.6, 0, 1.4);
+  for (let i = 0; i < TN; i++){
+    const f = 1 - i / (TN - 1), p = tr.hp[i], s = tr.hs[i], a = i * 6, al = Math.pow(f, 1.6) * glow;
+    tr.pos[a] = p.x + s.x * f; tr.pos[a + 1] = p.y + s.y * f; tr.pos[a + 2] = p.z + s.z * f;
+    tr.pos[a + 3] = p.x - s.x * f; tr.pos[a + 4] = p.y - s.y * f; tr.pos[a + 5] = p.z - s.z * f;
+    tr.al[i * 2] = tr.al[i * 2 + 1] = al;
+  }
+  tr.g.attributes.position.needsUpdate = tr.g.attributes.aA.needsUpdate = true; tr.u.uC.value.copy(h.color);
+}
+
+/* ============ 8. 音（鐘・地鳴りのドローン・風。鳴った場所から聞こえる = 立体音響） ============ */
+const A = {ctx:null, mode:0, base:432, space:0.5, vol:0.75, droneVol:0.6, auto:true, notes:0, voices:0, decay:2.8};
+const SCALES = {maj:[0, 2, 4, 7, 9], yo:[0, 2, 5, 7, 9], min:[0, 3, 5, 7, 10]};   // 五音の並び（明るい五音 ／ 陽音階 ／ 暗めの五音）
+// 鐘の作り: [周波数の倍率, 大きさ, 余韻の長さの倍率, ずらし(セント)]
+const MODES = [
+  {name:'チベタンチャイム', scale:'maj', att:0.003, dec:1.0, gain:0.2, parts:[[1, 1, 1, 0], [1, 0.45, 1, 6], [2.76, 0.42, 0.55, 3], [5.40, 0.22, 0.34, -5], [8.93, 0.1, 0.2, 2]]},
+  {name:'クリスタルボウル', scale:'maj', att:0.09, dec:1.7, gain:0.2, parts:[[1, 1, 1, 0], [1, 0.7, 1, 3.2], [2, 0.16, 0.7, 0], [3, 0.05, 0.45, 0]]},
+  {name:'和の五音（琴）', scale:'yo', att:0.002, dec:0.5, gain:0.24, wave:'triangle', parts:[[1, 1, 1, 0], [2, 0.32, 0.6, 0], [3, 0.12, 0.35, 0], [4.02, 0.05, 0.2, 0]]},
+  {name:'コズミック（シンセ）', scale:'min', att:0.03, dec:1.2, gain:0.11, synth:true},
+];
+function noiseBuf(ctx, sec){ const n = ctx.sampleRate * sec | 0, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; return b; }
+function makeIR(ctx, sec, pw){   // 残響（広い洞窟のような響き）を、その場で作る
+  const n = ctx.sampleRate * sec | 0, b = ctx.createBuffer(2, n, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++){ const d = b.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++){ lp = lp * 0.55 + (Math.random() * 2 - 1) * 0.45; d[i] = lp * Math.pow(1 - i / n, pw); } }
+  return b;
+}
+function setPos(pn, p){ if (pn.positionX){ pn.positionX.value = p.x; pn.positionY.value = p.y; pn.positionZ.value = p.z; } else pn.setPosition(p.x, p.y, p.z); }
+function mkPanner(p){ const pn = A.ctx.createPanner(); pn.panningModel = 'HRTF'; pn.distanceModel = 'inverse'; pn.refDistance = 0.8; pn.maxDistance = 60; pn.rolloffFactor = 0.7; setPos(pn, p); return pn; }
+function audioInit(){
+  if (A.ctx){ A.ctx.resume(); return; }
+  const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+  const ctx = A.ctx = new C({latencyHint:'interactive'});
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -16; comp.knee.value = 12; comp.ratio.value = 3.5; comp.attack.value = 0.008; comp.release.value = 0.35;
+  A.master = ctx.createGain(); A.master.gain.value = A.vol; A.master.connect(comp); comp.connect(ctx.destination);
+  A.duck = ctx.createGain(); A.duck.connect(A.master);   // 鼓動の瞬間に、一瞬だけ小さくなる（うねり）
+  A.bus = ctx.createGain(); A.bus.connect(A.duck);
+  A.rev = ctx.createConvolver(); A.rev.buffer = makeIR(ctx, 5.0, 2.4);
+  A.revSend = ctx.createGain(); A.revSend.gain.value = A.space; A.revSend.connect(A.rev); A.rev.connect(A.master);
+  // こだま（左右に跳ねる）
+  A.dlySend = ctx.createGain(); A.dlySend.gain.value = A.space * 0.55;
+  const dL = ctx.createDelay(2), dR = ctx.createDelay(2), fL = ctx.createGain(), fR = ctx.createGain(), lp = ctx.createBiquadFilter(), mg = ctx.createChannelMerger(2);
+  dL.delayTime.value = 0.375; dR.delayTime.value = 0.5; fL.gain.value = fR.gain.value = 0.38; lp.type = 'lowpass'; lp.frequency.value = 3200;
+  A.dlySend.connect(dL); dL.connect(lp); lp.connect(fL); fL.connect(dR); dR.connect(fR); fR.connect(dL);
+  dL.connect(mg, 0, 0); dR.connect(mg, 0, 1); mg.connect(A.master); mg.connect(A.revSend);
+  droneInit(); windInit();
+}
+function droneInit(){   // 地鳴りのドローン（基音の 1/4 と 5 度・オクターブ）。左右の耳で 6Hz ちがう = ゆっくりうねる
+  const ctx = A.ctx, D = A.drone = {out:ctx.createGain(), lp:ctx.createBiquadFilter(), osc:[], noiseG:ctx.createGain()};
+  D.lp.type = 'lowpass'; D.lp.frequency.value = 420; D.lp.Q.value = 0.9;
+  D.out.gain.value = A.droneVol * 0.3; D.lp.connect(D.out); D.out.connect(A.duck); D.out.connect(A.revSend);
+  const mg = ctx.createChannelMerger(2); mg.connect(D.lp);
+  // [倍率, 0=左 1=右 2=両方, 波の形, 大きさ, ずらし(Hz)]
+  for (const [r, ch, w, g, beat] of [[1, 0, 'sine', 0.5, 0], [1, 1, 'sine', 0.5, 6], [1.5, 2, 'triangle', 0.15, 0], [2, 2, 'sine', 0.13, 0.18], [0.5, 2, 'sine', 0.3, 0]]){
+    const o = ctx.createOscillator(), gg = ctx.createGain(); o.type = w; gg.gain.value = g; o.connect(gg);
+    if (ch === 2){ gg.connect(mg, 0, 0); gg.connect(mg, 0, 1); } else gg.connect(mg, 0, ch);
+    o.start(); D.osc.push({o, r, beat});
+  }
+  const ns = ctx.createBufferSource(), nf = ctx.createBiquadFilter(); ns.buffer = noiseBuf(ctx, 3); ns.loop = true; nf.type = 'lowpass'; nf.frequency.value = 380;   // 海の息のようなざわめき
+  D.noiseG.gain.value = 0.05; ns.connect(nf); nf.connect(D.noiseG); D.noiseG.connect(D.out); ns.start();
+  droneTune(true);
+}
+function droneTune(instant){ const D = A.drone; if (!D) return; const f0 = A.base / 4, tt = A.ctx.currentTime; for (const x of D.osc){ const f = f0 * x.r + x.beat; if (instant) x.o.frequency.value = f; else x.o.frequency.setTargetAtTime(f, tt, 0.6); } }
+function windInit(){   // 手を速く振ると鳴る風（手の高さで、音の高さが変わる）
+  const ctx = A.ctx, nb = noiseBuf(ctx, 2);
+  for (const h of hands){
+    const s = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), pan = mkPanner(h.pos);
+    s.buffer = nb; s.loop = true; bp.type = 'bandpass'; bp.Q.value = 5; bp.frequency.value = 900; g.gain.value = 0;
+    s.connect(bp); bp.connect(g); g.connect(pan); pan.connect(A.bus); pan.connect(A.revSend); s.start(0, Math.random() * 1.5); h.wind = {bp, g, pan};
+  }
+}
+function bell(freq, pos, vel){
+  const ctx = A.ctx; if (!ctx || ctx.state !== 'running' || A.voices > 70) return;
+  const M = MODES[A.mode], now = ctx.currentTime + 0.004, dec = A.decay * M.dec;
+  const out = ctx.createGain(), pn = mkPanner(pos); out.connect(pn); pn.connect(A.bus); pn.connect(A.revSend); pn.connect(A.dlySend);
+  let end = now;
+  if (M.synth){   // コズミック: ずらした 2 本ののこぎり波 ＋ 1 オクターブ下 → ローパス（音色が閉じていく）
+    const lp = ctx.createBiquadFilter(), g = ctx.createGain(), e = now + M.att + dec * 1.3;
+    lp.type = 'lowpass'; lp.Q.value = 7; lp.frequency.setValueAtTime(Math.min(16000, freq * 10), now); lp.frequency.exponentialRampToValueAtTime(freq * 1.6, now + dec * 0.6);
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(M.gain * vel, now + M.att); g.gain.exponentialRampToValueAtTime(0.0001, e);
+    for (const det of [-9, 9]){ const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = freq; o.detune.value = det; o.connect(lp); o.start(now); o.stop(e + 0.05); }
+    const sub = ctx.createOscillator(), sg = ctx.createGain(); sub.frequency.value = freq / 2; sg.gain.value = 0.6; sub.connect(sg); sg.connect(lp); sub.start(now); sub.stop(e + 0.05);
+    lp.connect(g); g.connect(out); end = e;
+  } else for (const [r, amp, dk, det] of M.parts){
+    const f = freq * r; if (f > 18000) continue;
+    const o = ctx.createOscillator(), g = ctx.createGain(), e = now + M.att + dec * dk;
+    o.type = M.wave || 'sine'; o.frequency.value = f; o.detune.value = det;
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(Math.max(0.0002, amp * vel * M.gain), now + M.att); g.gain.exponentialRampToValueAtTime(0.0001, e);
+    o.connect(g); g.connect(out); o.start(now); o.stop(e + 0.05); end = Math.max(end, e);
+  }
+  A.notes++; A.voices++;
+  setTimeout(() => { A.voices--; try { pn.disconnect(); out.disconnect(); } catch (_) {} }, (end - ctx.currentTime + 0.5) * 1000);
+}
+function gong(){   // 光が爆ぜるときの、低い銅鑼と、ふくらむ息
+  const ctx = A.ctx; if (!ctx || ctx.state !== 'running') return;
+  const f = A.base / 4, now = ctx.currentTime + 0.01, out = ctx.createGain(); out.gain.value = 0.5; out.connect(A.bus); out.connect(A.revSend);
+  for (const [r, a, d] of [[1, 0.5, 7], [1.47, 0.28, 5], [2.09, 0.2, 4], [2.56, 0.14, 3.2], [3.2, 0.08, 2.4]]){
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f * r;
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(a, now + 0.04); g.gain.exponentialRampToValueAtTime(0.0001, now + d);
+    o.connect(g); g.connect(out); o.start(now); o.stop(now + d + 0.1);
+  }
+  const s = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = noiseBuf(ctx, 3); bp.type = 'bandpass'; bp.Q.value = 1.2;
+  bp.frequency.setValueAtTime(200, now); bp.frequency.exponentialRampToValueAtTime(2400, now + 1.2); bp.frequency.exponentialRampToValueAtTime(300, now + 3);
+  g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.22, now + 0.8); g.gain.exponentialRampToValueAtTime(0.0001, now + 3);
+  s.connect(bp); bp.connect(g); g.connect(out); s.start(now); s.stop(now + 3.1);
+  setTimeout(() => { try { out.disconnect(); } catch (_) {} }, 8000);
+}
+function tick(){   // 切りかえの小さな合図
+  const ctx = A.ctx; if (!ctx || ctx.state !== 'running') return;
+  const o = ctx.createOscillator(), g = ctx.createGain(), now = ctx.currentTime; o.frequency.value = A.base * 2;
+  g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.05, now + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+  o.connect(g); g.connect(A.bus); o.start(now); o.stop(now + 0.15);
+}
+function audioTick(warp, breath){
+  const ctx = A.ctx; if (!ctx) return; const now = ctx.currentTime, L = ctx.listener;
+  if (L.positionX){ L.positionX.value = head.x; L.positionY.value = head.y; L.positionZ.value = head.z; L.forwardX.value = headFwd.x; L.forwardY.value = headFwd.y; L.forwardZ.value = headFwd.z; L.upX.value = headUp.x; L.upY.value = headUp.y; L.upZ.value = headUp.z; }
+  else { L.setPosition(head.x, head.y, head.z); L.setOrientation(headFwd.x, headFwd.y, headFwd.z, headUp.x, headUp.y, headUp.z); }
+  const D = A.drone;
+  if (D){ D.lp.frequency.setTargetAtTime(380 + warp * 2200, now, 0.25); D.noiseG.gain.setTargetAtTime(0.03 + 0.07 * breath + warp * 0.08, now, 0.3); D.out.gain.setTargetAtTime(A.droneVol * (A.droneMul ?? 1) * (0.3 + warp * 0.12), now, 0.4); }
+  for (const h of hands){ const w = h.wind; if (!w) continue;
+    w.g.gain.setTargetAtTime(h.on ? clamp((h.speed - 0.25) * 0.12, 0, 0.22) : 0, now, 0.06); w.bp.frequency.setTargetAtTime(300 + clamp(h.pos.y, 0, 2.4) * 1400, now, 0.08); setPos(w.pan, h.pos); }
+  A.revSend.gain.setTargetAtTime(A.space, now, 0.2); A.dlySend.gain.setTargetAtTime(A.space * 0.55, now, 0.2);
+}
+
+/* ============ 9. 文字（PC = 画面の上 ／ VR = 目の前の板） ============ */
+const _v = new T.Vector3(), _c = new T.Color();
+function placeFront(o, dist, dy){ headPose(); _v.copy(headFwd).setY(0); if (_v.lengthSq() < 1e-4) _v.set(0, 0, -1); _v.normalize(); o.position.copy(head).addScaledVector(_v, dist); o.position.y = head.y + dy; o.lookAt(head.x, o.position.y, head.z); }
+const statusText = () => '🔔 ' + MODES[A.mode].name + ' ／ 🎨 ' + PALS[palIdx].name + ' ／ ' + A.base + 'Hz ／ 自動演奏 ' + (A.auto ? '入' : '切') + (kalNow() ? ' ／ 万華鏡 ' + kalNow() + ' 枚' : '')
+  + (BEAT.idx ? ' ／ 🥁 ' + BEAT.bpm : '') + (LOOP.st !== 'off' ? ' ／ 🔁 ' + ({rec:'録音中', play:'回っている', dub:'重ね録り中'})[LOOP.st] : '') + (MIR.n ? ' ／ 🪞 ' + MIR.n : '') + (SH.mode ? ' ／ ✨ ' + SH.names[SH.mode] : '') + (WD.i ? ' ／ 🌌 ' + WORLDS[WD.i].name : '') + (ZM.mode !== 'auto' ? ' ／ 🔭 ' + ZM.names[ZM.mode] : '') + (ZM.julOn ? ' ／ 🌺' : '') + (JR.on ? ' ／ 🚀 旅 残り ' + jrLeft() : '') + (SW.on ? ' ／ 🎆 ' + (SW.song ? '「' + SW.title + '」' : 'ショー') + (SW.sceneName ? '・' + SW.sceneName : '') : '');
+const hudC = document.createElement('canvas'); hudC.width = 1024; hudC.height = 600;
+const hudTex = new T.CanvasTexture(hudC); hudTex.colorSpace = T.SRGBColorSpace;
+const hud3 = new T.Mesh(new T.PlaneGeometry(1.1, 0.645), new T.MeshBasicMaterial({map:hudTex, transparent:true, depthWrite:false, depthTest:false, opacity:0, toneMapped:false}));
+hud3.renderOrder = 50; hud3.visible = false; scene.add(hud3);
+let hudWant = 0, hudAt = -99, hudAuto = false;
+const HUD_LINES = ['トリガー = 鐘と波紋（手の高さ = 音の高さ）・引いたまま上下 = ハープ', '握る = 星くずを吸いよせる・中へ進む ／ 両手で広げる = 万華鏡', '右スティック ←→ 音色 ↑↓ 響き ・押しこむ = ズーム',
+  '左スティック ←→ 色 ↑↓ 流れ ・押しこむ = 世界を次へ', 'A = 光が爆ぜる ／ B = メニュー（ここから全部選べる）', 'X = ループ（録る → 回す → 重ねる・長押しで消す）', 'Y = 鼓動（切 → 60 → 90 → 128 → 138）', '🎆 ショー・🎵 曲で演出・⚡ 見せ場・旅 = メニュー（B）のいちばん上'];
+function drawHud(){
+  const x = hudC.getContext('2d'); x.clearRect(0, 0, 1024, 600);
+  x.fillStyle = 'rgba(8,0,20,.74)'; x.beginPath(); x.roundRect(4, 4, 1016, 592, 36); x.fill(); x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 3; x.stroke();
+  const g = x.createLinearGradient(160, 0, 860, 0); g.addColorStop(0, '#ff4fd8'); g.addColorStop(0.35, '#ffd84f'); g.addColorStop(0.7, '#4ff2ff'); g.addColorStop(1, '#a64fff');
+  x.fillStyle = g; x.font = '900 64px "Noto Sans JP", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('TRANCE BLOOM', 512, 70);
+  x.fillStyle = '#fff'; x.font = 'bold 34px "Noto Sans JP", sans-serif'; x.textAlign = 'left';
+  HUD_LINES.forEach((s, i) => x.fillText(s, 60, 150 + i * 50, 910));
+  x.fillStyle = '#ffd84f'; x.font = 'bold 28px "Noto Sans JP", sans-serif'; x.fillText(statusText(), 60, 560, 910);
+  hudTex.needsUpdate = true;
+}
+function showHud(on, auto){ hudWant = on ? 1 : 0; hudAuto = !!auto; if (on){ drawHud(); placeFront(hud3, 1.4, -0.05); hudAt = t; } }
+const t3C = document.createElement('canvas'); t3C.width = 1024; t3C.height = 112;
+const t3Tex = new T.CanvasTexture(t3C); t3Tex.colorSpace = T.SRGBColorSpace;
+const t3 = new T.Mesh(new T.PlaneGeometry(0.8, 0.0875), new T.MeshBasicMaterial({map:t3Tex, transparent:true, depthWrite:false, depthTest:false, opacity:0, toneMapped:false}));
+t3.renderOrder = 51; t3.visible = false; scene.add(t3);
+let t3At = -99, statT = -9;
+function toast(msg){
+  const el = $('toast'); el.textContent = msg; el.classList.add('on'); clearTimeout(toast.tm); toast.tm = setTimeout(() => el.classList.remove('on'), 1800);
+  if (xrOn()){ const x = t3C.getContext('2d'); x.clearRect(0, 0, 1024, 112); x.fillStyle = 'rgba(8,0,20,.78)'; x.beginPath(); x.roundRect(4, 4, 1016, 104, 52); x.fill();
+    x.fillStyle = '#fff'; x.font = 'bold 44px "Noto Sans JP", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(msg, 512, 58, 970); t3Tex.needsUpdate = true; t3At = t; placeFront(t3, 1.2, -0.3); }
+  if (hudWant) drawHud();
+}
+const stat = (m) => { if (t - statT > 0.2){ statT = t; toast(m); } };   // スティックでの連続の変化は、間引いて出す
+const hudPC = () => { $('hud').textContent = statusText(); };
+function textTick(dt){
+  const k = 1 - Math.exp(-dt * 6), m = hud3.material;
+  if (hudWant && hudAuto && t - hudAt > 18) hudWant = 0;   // 入った直後の説明は、18 秒で消える
+  m.opacity = lerp(m.opacity, hudWant * 0.97, k); hud3.visible = xrOn() && m.opacity > 0.01;
+  const age = t - t3At; t3.material.opacity = age < 1.8 ? 0.95 : Math.max(0, 0.95 - (age - 1.8) * 2); t3.visible = xrOn() && t3.material.opacity > 0.01;
+  if (t3.visible){ headPose(); _v.copy(headFwd).setY(0).normalize(); const wx = head.x + _v.x * 1.2, wz = head.z + _v.z * 1.2; t3.position.x = lerp(t3.position.x, wx, k); t3.position.z = lerp(t3.position.z, wz, k); t3.position.y = lerp(t3.position.y, head.y - 0.3, k); t3.lookAt(head.x, t3.position.y, head.z); }
+}
+
+/* ============ 10. 遊び方（手 → 音と光） ============ */
+let warp = 0, flowBase = 1, kal = 8, dens = 1, burst = 0, breath = 0.5, idle = 0, autoNext = 0, ft = 0, autoTold = false;
+const kalNow = () => kal;
+const noteIdx = (y) => clamp(Math.floor((y - 0.6) / 0.1), 0, 14);   // 0.6m〜2.1m を 15 段（五音 × 3 オクターブ）
+function noteFreq(k, side){ const sc = SCALES[MODES[A.mode].scale]; return A.base / 2 / (side === 'left' ? 2 : 1) * Math.pow(2, Math.floor(k / 5) + sc[k % 5] / 12); }
+function buzz(h, p, ms){ try { h.src?.gamepad?.hapticActuators?.[0]?.pulse?.(p, ms); } catch (_) {} }   // 手に「ブルッ」
+function noteFx(k, side, pos, vel, str, v){   // 1 つの音: 鐘・波紋・光の粒（色を返す）
+  palCol(k / 15 + (side === 'left' ? 0.5 : 0) + t * 0.01, _c);
+  bell(noteFreq(k, side), pos, vel); addRipple(pos, _c, str); emit(pos, v || ZERO, _c, Math.round(14 + str * 32), 0.5 + str * 0.6, 1.4);
+  ARP.center = k + (side === 'left' ? -5 : 0);   // 鼓動のアルペジオは、最後に鳴らした音のまわりを回る
+  return _c;
+}
+function playAt(h, k, vel, big){
+  const c = noteFx(k, h.side, h.pos, vel, big ? 1 : 0.55, h.vel);
+  h.color.copy(c); h.pulse = 1; h.lastNote = t; buzz(h, big ? 0.55 : 0.25, big ? 40 : 18);
+  loopRec(k, h.side, h.pos, vel);
+}
+function handTick(h, dt){
+  h.orb.g.visible = h.on;
+  if (!h.on){ h.trig = h.trigPrev = h.grip = false; h.speed = 0; return; }
+  h.vel.subVectors(h.pos, h.prev).divideScalar(Math.max(dt, 1e-3)); if (h.vel.lengthSq() > 400) h.vel.set(0, 0, 0);   // 手が飛んだ（つかみ直しなど）ときは、速さに数えない
+  h.speed = lerp(h.speed, h.vel.length(), 1 - Math.exp(-dt * 12)); h.prev.copy(h.pos);
+  const k = noteIdx(h.pos.y), onMenu = MB.open && menuTouch(h);   // メニューの板を指している間は、鐘を鳴らさない
+  if (onMenu){}
+  else if (h.trig && !h.trigPrev) playAt(h, k, 0.95, true);                                                                  // 引いた瞬間 = 大きく鳴る
+  else if (h.trig && k !== h.k && t - h.lastNote > 0.055) playAt(h, k, clamp(0.4 + h.speed * 0.2, 0.4, 0.85), false);   // 引いたまま動かして、段をまたいだ = ハープ
+  h.k = k; h.trigPrev = h.trig;
+  if (h.trig || h.grip || h.speed > 0.8) idle = 0;
+  h.emAcc += ((h.trig ? 90 : 0) + Math.max(0, h.speed - 0.6) * 160 + (h.grip ? 40 : 0)) * dt;   // 光の粒: 引いている間・速く振ったとき・握っている間
+  const n = Math.floor(h.emAcc); h.emAcc -= n; if (n) emit(h.pos, h.vel, h.color, Math.min(n, 30), h.grip ? 0.25 : 0.5, 1.2);
+  h.pulse = Math.max(0, h.pulse - dt * 2.5);
+  h.orb.g.position.copy(h.pos); h.orb.halo.material.color.copy(h.color); h.orb.core.material.color.copy(h.color).lerp(WHITE, 0.6);
+  h.orb.halo.scale.setScalar(0.12 + h.pulse * 0.16 + (h.grip ? 0.08 : 0) + Math.min(0.1, h.speed * 0.03));
+}
+function padTick(h, dt){   // スティックとボタン
+  if (!h.on) return;
+  const sx = h.stick[0] || 0, sy = h.stick[1] || 0;
+  if (Math.abs(sx) > 0.7 && h.stickArm){ h.stickArm = false; idle = 0; if (h.side === 'left') nextPal(Math.sign(sx)); else setMode(A.mode + Math.sign(sx)); }
+  if (Math.abs(sx) < 0.3) h.stickArm = true;
+  if (Math.abs(sy) > 0.25 && Math.abs(sy) > Math.abs(sx)){
+    idle = 0;
+    if (h.side === 'left'){ flowBase = clamp(flowBase - sy * dt * 0.9, 0.2, 3); stat('🌊 流れの速さ ×' + flowBase.toFixed(1)); }
+    else { A.space = clamp(A.space - sy * dt * 0.6, 0, 1); stat('🌌 響きの広さ ' + Math.round(A.space * 100) + '%'); }
+  }
+  for (let b = 0; b < 2; b++){
+    if (h.btn[b] && !h.btnPrev[b]){ idle = 0; h.btnAt = t; h.btnLong = false; pressBtn(h.side, b); }
+    if (h.side === 'left' && b === 0){   // X: 長押し 1.2 秒 = ループを消す ／ 短く押して離す = 録る → 回す → 重ねる
+      if (h.btn[0] && !h.btnLong && t - h.btnAt > 1.2){ h.btnLong = true; loopClear(); buzz(h, 0.7, 60); }
+      if (!h.btn[0] && h.btnPrev[0] && !h.btnLong) loopToggle();
+    }
+    h.btnPrev[b] = h.btn[b];
+  }
+  if (h.sp && !h.spPrev){ idle = 0; if (h.side === 'left') worldSet(WD.i + 1); else zoomNext(); }   // スティックの押しこみ: 左 = 世界を次へ ／ 右 = ズーム
+  h.spPrev = h.sp;
+}
+function pressBtn(side, b){
+  if (side === 'right') return b === 0 ? doBurst() : menuToggle();   // A = 光が爆ぜる ／ B = メニューの板
+  if (b === 1) beatSet(BEAT.idx + 1);                              // Y = 鼓動を次へ（X = ループは、離した時に padTick で）
+}
+function bothTick(dt){
+  const L = hands[0], R = hands[1], anyGrip = (L.on && L.grip) || (R.on && R.grip);
+  warp = lerp(warp, anyGrip ? 1 : 0, 1 - Math.exp(-dt * (anyGrip ? 1.2 : 0.8)));   // 握っている間 = 流れが速く・音がひらく
+  if (L.on && R.on && L.grip && R.grip){   // 両手で握る = 手の間の広さで、万華鏡の枚数
+    const d = L.pos.distanceTo(R.pos), want = d < 0.14 ? 0 : Math.round(clamp(2 + (d - 0.14) * 9, 2, 14));
+    if (want !== kal){ kal = want; stat(kal ? '🔮 万華鏡 ' + kal + ' 枚' : '🔮 万華鏡: なし'); tick(); hudPC(); }
+  }
+}
+function doBurst(){
+  headPose(); _v.copy(head).addScaledVector(headFwd, 2.2); palCol(Math.random(), _c);
+  addRipple(_v, _c, 1.6); burst = 1; FLOOR.uE.value = 1; gong(); idle = 0;
+  emit(_v, ZERO, _c, 120, 2.2, 2.2); for (const h of hands) if (h.on) buzz(h, 0.8, 90);
+}
+function nextPal(d){ setPal(palIdx + d); ZM.boost = 1; toast('🎨 色: ' + PALS[palIdx].name); tick(); hudPC(); }
+function setMode(i){
+  A.mode = (i + MODES.length) % MODES.length; toast('🔔 音色: ' + MODES[A.mode].name); hudPC();
+  const h = hands[1].on ? hands[1] : hands[0].on ? hands[0] : null; headPose(); _v.copy(head).addScaledVector(headFwd, 1.2);
+  bell(noteFreq(7, 'right'), h ? h.pos : _v, 0.7);   // 試し鳴らし
+}
+function setBase(b){ A.base = b; droneTune(false); toast('🎵 基音 ' + b + 'Hz'); hudPC(); headPose(); _v.copy(head).addScaledVector(headFwd, 1.2); bell(noteFreq(5, 'right'), _v, 0.6); }
+function toggleAuto(){ A.auto = !A.auto; autoNext = 0; toast(A.auto ? '🎐 自動演奏: 入（何もしないと 20 秒で始まる）' : '🎐 自動演奏: 切'); hudPC(); }
+function toggleHelp(){ if (xrOn()) return showHud(!hudWant, false); $('ui').classList.toggle('hide'); }
+const AW = {next:0, n:0};   // v6（10/12 03:24 そうたさん「自動演奏のときも切り替わって選ばれるようにしてください」）
+function autoWorldTick(){   // 自動演奏が鳴っている間は、世界もひとりでに切りかわる（GLSL の世界を多めに）。ショー・旅の間は、そちらの段取りにまかせる
+  if (!started || SW.on || JR.on || !A.auto || idle < 20){ AW.next = 0; return; }
+  if (!AW.next){ AW.next = t + 15; return; }   // 自動演奏が始まって 15 秒で、最初の切りかえ（そのあとは 35〜55 秒ごと）
+  if (t < AW.next) return;
+  AW.next = t + rnd(35, 55); AW.n++;
+  const gl = WORLDS.map((w, i) => (w.gl != null && i !== WD.i ? i : -1)).filter((i) => i >= 0), other = [0, 1, 2, 4].filter((i) => i !== WD.i);
+  if (WORLDS[WD.i].gl != null && Math.random() < 0.4){ glVarSet(Math.random() < 0.25 ? -1 : -2); toast('🎲 ' + WORLDS[WD.i].name.replace('🧪 ', '') + ': ' + GL.var.name); return; }   // v7: 4 割は、同じ世界のままバリエーションだけ変える
+  const pool = Math.random() < 0.7 ? gl : other, w = pool[Math.floor(Math.random() * pool.length)]; if (WORLDS[w].gl != null) GL.pendVar = Math.random() < 0.25 ? -1 : -2; worldSet(w, false, 0.35);
+}
+function autoTick(){   // 何もしないで 20 秒たつと、まわりで鐘がひとりでに鳴りはじめる（さわると止まる）
+  autoWorldTick();
+  const jAuto = JR.on && idle > 4;
+  if (!started || SW.on || (!jAuto && (!A.auto || idle < 20))){ autoNext = 0; autoTold = false; return; }
+  if (!autoTold && !JR.on){ autoTold = true; toast('🎐 自動演奏（さわると止まります）'); }
+  if (!autoNext) autoNext = t + 0.4;
+  if (t < autoNext) return;
+  autoNext = t + rnd(1.3, 3.4);
+  headPose(); const a = Math.random() * 6.28318, r = rnd(1.4, 3.6); _v.set(head.x + Math.cos(a) * r, rnd(0.8, 2.3), head.z + Math.sin(a) * r);
+  const k = noteIdx(_v.y), side = Math.random() < 0.3 ? 'left' : 'right'; palCol(k / 15 + Math.random() * 0.2, _c);
+  bell(noteFreq(k, side), _v, rnd(0.45, 0.8)); addRipple(_v, _c, rnd(0.5, 0.9)); emit(_v, ZERO, _c, 24, 0.7, 1.6);
+}
+function dustTick(dt){
+  const SL = SH.loc, sp = SH.pulse, stf = SW.on ? 5 : 1, stD = Math.sqrt(stf), ang = 0.035 * flowBase * (1 + warp * 2), relax = 1 - Math.exp(-dt * 0.8), fade = Math.exp(-dt * 1.2), G = [], RP = [];
+  for (const h of hands) if (h.on && h.grip) G.push(h.pos);
+  for (const r of rips){ const age = t - r.born; if (age >= 0 && age < 4.5) RP.push(r.pos.x, r.pos.y, r.pos.z, age * r.speed, r.str); }
+  const nr = RP.length / 5;
+  for (let i = 0; i < DN; i++){
+    const i3 = i * 3; let x = dPos[i3], y = dPos[i3 + 1], z = dPos[i3 + 2], vx = dVel[i3], vy = dVel[i3 + 1], vz = dVel[i3 + 2];
+    const dx = x - DC.x, dz = z - DC.z, sw = ang * (0.6 + dSeed[i] * 0.8);
+    vx += (-dz * sw - vx) * relax; vz += (dx * sw - vz) * relax; vy += (Math.sin(t * 0.21 + dSeed[i] * 6.28 + x * 0.13) * 0.1 - vy) * relax;   // ゆっくりした渦（速すぎると酔うので、ごくゆっくり）
+    for (let j = 0; j < G.length; j++){ const p = G[j], ex = p.x - x, ey = p.y - y, ez = p.z - z, d2 = ex * ex + ey * ey + ez * ez;
+      if (d2 < 30 && d2 > 0.003){ const f = 2.2 * dt / (d2 + 0.35); vx += ex * f; vy += ey * f; vz += ez * f; if (d2 < 0.5) dEn[i] = Math.min(1, dEn[i] + dt * 2); } }
+    for (let j = 0; j < nr; j++){ const o = j * 5, ex = x - RP[o], ey = y - RP[o + 1], ez = z - RP[o + 2], d = Math.sqrt(ex * ex + ey * ey + ez * ez) + 1e-4, g = Math.abs(d - RP[o + 3]);
+      if (g < 0.4){ const k = (1 - g / 0.4) * RP[o + 4] * 5 * dt; vx += ex / d * k; vy += ey / d * k; vz += ez / d * k; dEn[i] = Math.min(1, dEn[i] + k * 2); } }
+    if (SH.k > 0.001){   // 形へ集まる（止まった形 = ばね ／ 流れる形 = 追いかける。拍で少しふくらむ）
+      const lx = SL[i3], ly = SL[i3 + 1], lz = SL[i3 + 2], tx = SH.c.x + (lx * SH.X.x + lz * SH.Z.x) * sp, ty = SH.c.y + ly * sp, tz = SH.c.z + (lx * SH.X.z + lz * SH.Z.z) * sp;
+      SH.tgt[i3] = tx; SH.tgt[i3 + 1] = ty; SH.tgt[i3 + 2] = tz;
+      if (SH.dyn){ if (SH.wrap && SH.k > 0.95 && (tx - x) ** 2 + (ty - y) ** 2 + (tz - z) ** 2 > 25){ x = tx; y = ty; z = tz; vx = vy = vz = 0; } else { const kl = 1 - Math.exp(-dt * 7 * SH.k); x += (tx - x) * kl; y += (ty - y) * kl; z += (tz - z) * kl; vx *= 0.85; vy *= 0.85; vz *= 0.85; } }
+      else { const kk = SH.k * 1.4 * stf * dt, dm = 1 - SH.k * 1.8 * stD * dt; vx = (vx + (tx - x) * kk) * dm; vy = (vy + (ty - y) * kk) * dm; vz = (vz + (tz - z) * kk) * dm; }
+    }
+    x += vx * dt; y += vy * dt; z += vz * dt;
+    const ox = x - DC.x, oy = y - DC.y, oz = z - DC.z, R2 = ox * ox + oy * oy + oz * oz;
+    if (R2 > 676 || R2 < 0.25){ dSpawn(i); dEn[i] = 0; continue; }   // 遠くへ行きすぎた・顔に近すぎる粒は、生まれ直す
+    dPos[i3] = x; dPos[i3 + 1] = y; dPos[i3 + 2] = z; dVel[i3] = vx; dVel[i3 + 1] = vy; dVel[i3 + 2] = vz; dEn[i] *= fade;
+  }
+  dGeo.attributes.position.needsUpdate = dGeo.attributes.aEn.needsUpdate = true;
+}
+
+/* ============ 11. 入力（VR = Quest のコントローラー ／ PC = マウスを右手に見立てる） ============ */
+const ctrls = [0, 1].map((i) => { const c = renderer.xr.getController(i); c.addEventListener('connected', (e) => { c.userData.src = e.data; }); c.addEventListener('disconnected', () => { c.userData.src = null; }); rig.add(c); return c; });
+const mouse = {x:0, y:0, in:false, l:false, r:false, lt:0, hold:false}, cv = renderer.domElement, _ray = new T.Raycaster(), _ndc = new T.Vector2();
+const setMouse = (e) => { mouse.x = e.clientX / innerWidth * 2 - 1; mouse.y = -(e.clientY / innerHeight) * 2 + 1; mouse.in = true; };
+cv.addEventListener('pointermove', (e) => { if (e.pointerType === 'touch'){ touchMove(e); return; } setMouse(e); });
+cv.addEventListener('pointerleave', () => { mouse.in = mouse.l = mouse.r = false; });
+cv.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch'){ touchDown(e); audioInit(); idle = 0; return; } setMouse(e); if (e.button === 0){ mouse.l = true; mouse.lt = performance.now(); } if (e.button === 2) mouse.r = true; audioInit(); idle = 0; });
+addEventListener('pointerup', (e) => { if (e.pointerType === 'touch'){ touchUp(e); return; } if (e.button === 0) mouse.l = false; if (e.button === 2) mouse.r = false; });
+cv.addEventListener('contextmenu', (e) => e.preventDefault());
+let camYaw = 0, camYawWant = 0;
+// ---- Web 版: スマホの指 ／ 📱 傾けて見回す ----
+let camPitch = 0, camPitchWant = 0;
+const TP = new Map(); let tLong = 0;
+function touchDown(e){
+  TP.set(e.pointerId, {x:e.clientX, y:e.clientY, x0:e.clientX, y0:e.clientY, t0:performance.now(), moved:false});
+  clearTimeout(tLong);
+  if (TP.size === 1) tLong = setTimeout(() => { const p = TP.get(e.pointerId); if (p && !p.moved && TP.size === 1){ setMouse({clientX:p.x, clientY:p.y}); mouse.r = true; mouse.hold = true; } }, 450);   // 長押し = 星くずを吸いよせる
+}
+function touchMove(e){
+  const p = TP.get(e.pointerId); if (!p) return;
+  const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+  if (mouse.hold){ setMouse(e); return; }   // 長押しのまま動かす = 吸いよせる場所が動く
+  if (Math.hypot(p.x - p.x0, p.y - p.y0) > 12) p.moved = true;
+  if (p.moved){ const k = 3.2 / Math.max(innerWidth, innerHeight) / Math.max(1, TP.size); camYawWant += dx * k; camPitchWant = clamp(camPitchWant + dy * k, -1.25, 1.25); if (GYRO.on) GYRO.yaw += dx * k; }   // 指でなぞる = 見まわす
+}
+function touchUp(e, cancel){
+  const p = TP.get(e.pointerId); TP.delete(e.pointerId); clearTimeout(tLong);
+  if (mouse.hold){ if (!TP.size){ mouse.hold = false; mouse.r = false; } return; }
+  if (!cancel && p && !p.moved && performance.now() - p.t0 < 450){ setMouse(e); mouse.lt = performance.now(); }   // さっとタップ = 鐘と波紋（メニューの板なら、押す）
+}
+addEventListener('pointercancel', (e) => { if (e.pointerType === 'touch') touchUp(e, true); });
+const GYRO = {on:false, ok:false, q:new T.Quaternion(), yaw:0, base:false};
+const _gz = new T.Vector3(0, 0, 1), _ge = new T.Euler(), _gq0 = new T.Quaternion(), _gq1 = new T.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)), _gyq = new T.Quaternion(), _gUp = new T.Vector3(0, 1, 0), _gf = new T.Vector3();
+function onOrient(e){   // 端末の向き（方位・前後・左右の傾き）→ カメラの向き
+  if (e.alpha == null) return;
+  const d = Math.PI / 180, o = (screen.orientation?.angle ?? window.orientation ?? 0) * d;
+  _ge.set(e.beta * d, e.alpha * d, -e.gamma * d, 'YXZ'); GYRO.q.setFromEuler(_ge).multiply(_gq1).multiply(_gq0.setFromAxisAngle(_gz, -o));
+  if (!GYRO.base){ _gf.set(0, 0, -1).applyQuaternion(GYRO.q); GYRO.yaw = camYaw - Math.atan2(-_gf.x, -_gf.z); GYRO.base = true; }   // 入れた瞬間に見ていた向きを、そのまま正面に
+  GYRO.ok = true;
+}
+function gyroApply(){ camera.quaternion.copy(_gyq.setFromAxisAngle(_gUp, GYRO.yaw)).multiply(GYRO.q); }
+async function gyroToggle(){
+  idle = 0;
+  if (GYRO.on){ GYRO.on = false; removeEventListener('deviceorientation', onOrient); camPitchWant = 0; toast('📱 傾けて見回す: 切（指でなぞって見まわす）'); return; }
+  try { if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){ const r = await DeviceOrientationEvent.requestPermission(); if (r !== 'granted'){ toast('📱 傾きを使う許可が出ませんでした'); return; } } }
+  catch (_){ toast('📱 傾きが使えませんでした'); return; }
+  GYRO.on = true; GYRO.ok = false; GYRO.base = false; addEventListener('deviceorientation', onOrient);
+  toast('📱 傾けて見回す: 入（スマホを動かすと、まわりが見えます）');
+  setTimeout(() => { if (GYRO.on && !GYRO.ok){ GYRO.on = false; removeEventListener('deviceorientation', onOrient); toast('📱 この端末では、傾きが取れませんでした'); } }, 2000);
+}
+function readInput(){
+  if (xrOn()){
+    for (const h of hands){
+      if (h.inj) continue;
+      const c = ctrls.find((c) => c.userData.src?.handedness === h.side), gp = c?.userData.src?.gamepad;
+      h.on = !!gp; h.src = c?.userData.src || null; if (!gp) continue;
+      c.updateMatrixWorld(true); h.pos.setFromMatrixPosition(c.matrixWorld); c.getWorldQuaternion(h.q);
+      const B = gp.buttons;
+      h.trig = !!(B[0] && (B[0].pressed || B[0].value > 0.55)); h.grip = !!(B[1] && (B[1].pressed || B[1].value > 0.55));
+      h.stick = [gp.axes[2] || 0, gp.axes[3] || 0]; h.btn = [!!B[4]?.pressed, !!B[5]?.pressed]; h.sp = !!B[3]?.pressed;   // 4 = A/X ・ 5 = B/Y
+    }
+    return;
+  }
+  const L = hands[0], R = hands[1];
+  if (!L.inj) L.on = false;
+  if (!R.inj){
+    R.on = started && (mouse.in || performance.now() - mouse.lt < 150);
+    if (R.on){ _ndc.set(mouse.x, mouse.y); _ray.setFromCamera(_ndc, camera); R.pos.copy(_ray.ray.origin).addScaledVector(_ray.ray.direction, 1.8); R.q.copy(camera.quaternion); R.trig = mouse.l || performance.now() - mouse.lt < 120; R.grip = mouse.r; }
+  }
+}
+addEventListener('keydown', (e) => {
+  if (!started || e.repeat) return;
+  const k = e.key.toLowerCase(); idle = 0;
+  if ('1234'.includes(e.key) && e.key !== '') setMode(+e.key - 1);
+  else if (k === 'p') nextPal(1);
+  else if (k === 'k'){ kal = kal ? (kal >= 12 ? 0 : kal + 2) : 4; toast(kal ? '🔮 万華鏡 ' + kal + ' 枚' : '🔮 万華鏡: なし'); tick(); hudPC(); }
+  else if (e.code === 'Space'){ e.preventDefault(); doBurst(); }
+  else if (k === 'f') setBase(A.base === 432 ? 528 : 432);
+  else if (k === 'a') toggleAuto();
+  else if (k === 'h') toggleHelp();
+  else if (k === 'm') menuToggle();
+  else if (k === 'b') beatSet(BEAT.idx + 1);
+  else if (k === 'l'){ if (e.shiftKey) loopClear(); else loopToggle(); }
+  else if (k === 't') tunSet(!TUN.on);
+  else if (k === 'j') journeyToggle();
+  else if (k === 'n') mirSet(MIR.next());
+  else if (k === 's') shapeSet(SH.mode + 1);
+  else if (k === 'o') bellsSet(!TB.on);
+  else if (k === 'g') gazeSet(!GZ.on);
+  else if (k === 'y') breathSet(!BR.on);
+  else if (k === 'w') worldSet(WD.i + 1);
+  else if (k === 'z') zoomNext();
+  else if (k === 'c') frameSet();
+  else if (k === 'i') juliaSet(!ZM.julOn);
+  else if (k === 'e') showSet(!SW.on);
+  else if (k === 'u'){ if (e.shiftKey) songStop(); else songPick(); }
+  else if (k === 'r') showBig(true);
+  else if (e.key === 'ArrowLeft') camYawWant += 0.45;
+  else if (e.key === 'ArrowRight') camYawWant -= 0.45;
+  else if (e.key === '[' || e.key === ']'){ dens = clamp(dens + (e.key === ']' ? 0.15 : -0.15), 0.4, 2.5); toast('しまの細かさ ×' + dens.toFixed(2)); }
+});
+
+/* ============ 12.5 v2: 鼓動・ループ・見つめると咲く・空中の鐘・鏡の分身・トンネル・星くずの形・呼吸の玉・旅・メニューの板 ============ */
+// 10/11 05:23 そうたさん「めちゃくちゃいいですね！ モットモットいろいろ改良し、いろいろなよさそうな要素を考案し、追加していってください」
+const sm = (a, b, x) => { const k = clamp((x - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); };
+const FRES_VS = `varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`;
+const addMat = (o) => new T.ShaderMaterial({transparent:true, depthWrite:false, blending:T.AdditiveBlending, ...o});
+let kickV = 0, dimV = 1;
+
+/* ---- 🥁 鼓動（切 → ハートビート 60 → ゆったり 90 → トランス 128 → サイケ 138）。キックの瞬間に、空・床・星くず・手の光が脈打つ ---- */
+const BEAT = {idx:0, bpm:0, next:0, step:0, kicks:0, arp:0, q:[], bus:null, hat:null, lvl:[0, 60, 90, 128, 138], names:['切', 'ハートビート 60', 'ゆったり 90', 'トランス 128', 'サイケ 138']};
+const ARP = {center:7, pat:[0, 2, 4, 2, 5, 4, 2, 4, 0, 3, 5, 3, 6, 5, 3, 1]};   // アルペジオは、最後に鳴らした音のまわりを回る
+function beatInit(){ const ctx = A.ctx; if (!ctx || BEAT.bus) return; BEAT.bus = ctx.createGain(); BEAT.bus.gain.value = 0.55; BEAT.bus.connect(A.master); BEAT.hat = noiseBuf(ctx, 1); }
+function bKick(w, g, f0, f1, len){
+  const ctx = A.ctx, o = ctx.createOscillator(), a = ctx.createGain();
+  o.frequency.setValueAtTime(f0, w); o.frequency.exponentialRampToValueAtTime(f1, w + 0.11);
+  a.gain.setValueAtTime(0.0001, w); a.gain.exponentialRampToValueAtTime(g, w + 0.004); a.gain.exponentialRampToValueAtTime(0.0001, w + len);
+  o.connect(a); a.connect(BEAT.bus); o.start(w); o.stop(w + len + 0.02);
+  A.duck.gain.setValueAtTime(1, w); A.duck.gain.linearRampToValueAtTime(0.5, w + 0.012); A.duck.gain.setTargetAtTime(1, w + 0.03, 0.09);   // ほかの音を一瞬だけ引っこめる（うねり）
+  BEAT.q.push(w); BEAT.kicks++;
+}
+function bHat(w, g, len){
+  const ctx = A.ctx, s = ctx.createBufferSource(), hp = ctx.createBiquadFilter(), a = ctx.createGain();
+  s.buffer = BEAT.hat; hp.type = 'highpass'; hp.frequency.value = 7500; a.gain.setValueAtTime(g, w); a.gain.exponentialRampToValueAtTime(0.0001, w + len);
+  s.connect(hp); hp.connect(a); a.connect(BEAT.bus); s.start(w, Math.random() * 0.5); s.stop(w + len + 0.02);
+}
+function bBass(w, f, g, len, cut){
+  const ctx = A.ctx, o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), a = ctx.createGain();
+  o.type = 'sawtooth'; o.frequency.value = f; lp.type = 'lowpass'; lp.Q.value = 4; lp.frequency.setValueAtTime(cut, w); lp.frequency.exponentialRampToValueAtTime(f * 1.5, w + len);
+  a.gain.setValueAtTime(0.0001, w); a.gain.exponentialRampToValueAtTime(g, w + 0.006); a.gain.exponentialRampToValueAtTime(0.0001, w + len);
+  o.connect(lp); lp.connect(a); a.connect(BEAT.bus); o.start(w); o.stop(w + len + 0.02);
+}
+function bArp(w, f, g, len){
+  const ctx = A.ctx, o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), a = ctx.createGain(), p = ctx.createStereoPanner();
+  o.type = 'square'; o.frequency.value = f; lp.type = 'lowpass'; lp.Q.value = 6; lp.frequency.setValueAtTime(Math.min(12000, f * 6), w); lp.frequency.exponentialRampToValueAtTime(f * 1.2, w + len);
+  a.gain.setValueAtTime(0.0001, w); a.gain.exponentialRampToValueAtTime(g, w + 0.004); a.gain.exponentialRampToValueAtTime(0.0001, w + len);
+  p.pan.value = Math.sin(w * 0.9) * 0.6;   // 左右へゆっくり揺れる
+  o.connect(lp); lp.connect(a); a.connect(p); p.connect(BEAT.bus); p.connect(A.dlySend); o.start(w); o.stop(w + len + 0.02);
+}
+function arpNote(w, s, g, len){ const k = clamp(Math.round(ARP.center), 3, 12) + ARP.pat[s % 16] - 2; bArp(w, noteFreq(clamp(k, 0, 14), 'right'), g, len); BEAT.arp++; }
+function beatStep(s, w){
+  if (SW.on && !SW.song) return showStep(w);   // 🎆 ショーの間は、ショーの台本で鳴らす
+  const i = BEAT.idx, root = A.base / 8, q = s % 4, sp = 60 / BEAT.bpm / 4;
+  if (i === 1){ if (q === 0) bKick(w, 0.7, 70, 38, 0.3); if (q === 1) bKick(w, 0.4, 64, 36, 0.25); return; }   // ドクン、ドクン
+  if (i === 2){ if (s % 8 === 0) bKick(w, 0.8, 110, 42, 0.42); if (q === 2) bHat(w, 0.05, 0.05); if (s % 2 === 0 && s % 8 !== 0) arpNote(w, s, 0.045, sp * 3); return; }
+  if (q === 0) bKick(w, 0.95, 125, 44, 0.36);
+  if (q === 2) bHat(w, 0.08, 0.06); else bHat(w, 0.018, 0.025);
+  if (i === 3){ if (q === 2) bBass(w, root * 2, 0.35, sp * 1.6, 900); arpNote(w, s, 0.045, sp * 1.4); }   // トランス: 裏のベース ＋ 16 分のアルペジオ
+  if (i === 4){ if (q !== 0) bBass(w, root * 2, 0.3, sp * 0.85, 1400); arpNote(w, s, 0.04, sp * 1.1); }    // サイケ: 転がるベース（キック以外の 16 分ぜんぶ）
+}
+function beatSet(i, quiet){
+  BEAT.idx = (i + BEAT.lvl.length) % BEAT.lvl.length; BEAT.bpm = BEAT.lvl[BEAT.idx]; beatInit(); BEAT.step = 0; BEAT.q.length = 0;
+  if (A.ctx) BEAT.next = A.ctx.currentTime + 0.06;
+  if (!quiet){ toast('🥁 鼓動: ' + BEAT.names[BEAT.idx]); ZM.boost = 1; } menuDirty(); hudPC();
+}
+function beatTick(dt){
+  kickV = Math.max(0, kickV - dt * 5);
+  const ctx = A.ctx; if (!ctx || !BEAT.bpm || !BEAT.bus) return;
+  const sp = 60 / BEAT.bpm / 4;
+  if (BEAT.next < ctx.currentTime - 0.25) BEAT.next = ctx.currentTime + 0.05;   // 遅れすぎた（窓が裏に回っていた）ときは、今から
+  while (BEAT.next < ctx.currentTime + 0.12){ beatStep(BEAT.step, BEAT.next); BEAT.next += sp; BEAT.step = (BEAT.step + 1) % 64; }
+  while (BEAT.q.length && BEAT.q[0] <= ctx.currentTime){ BEAT.q.shift(); kickV = 1; FLOOR.uE.value = Math.max(FLOOR.uE.value, 0.35); for (const h of hands) h.pulse = Math.max(h.pulse, 0.35); jrKick(); }
+}
+
+/* ---- 🔁 ループ: 鳴らした鐘を録って、その場所で回し続ける（X: 録る → 回す → 重ねる ／ 長押し = 消す） ---- */
+const LOOP = {st:'off', t0:0, len:0, ev:[], ph:0, fired:0};
+function loopRec(k, side, pos, vel){
+  if ((LOOP.st !== 'rec' && LOOP.st !== 'dub') || LOOP.ev.length > 240) return;
+  LOOP.ev.push({at:LOOP.st === 'rec' ? t - LOOP.t0 : (t - LOOP.t0) % LOOP.len, k, side, pos:pos.clone(), vel:vel * 0.85, fresh:LOOP.st === 'dub'});
+}
+function loopToggle(){
+  if (LOOP.st === 'off'){ LOOP.st = 'rec'; LOOP.t0 = t; LOOP.ev = []; toast('🔴 ループ: 録音中（鐘を鳴らして → もう一度で回す）'); }
+  else if (LOOP.st === 'rec'){
+    let len = t - LOOP.t0;
+    if (!LOOP.ev.length || len < 0.6){ LOOP.st = 'off'; toast('🔁 ループ: 音が入っていないので、やめました'); menuDirty(); hudPC(); return; }
+    if (BEAT.bpm){ const bar = 240 / BEAT.bpm; len = Math.max(1, Math.round(len / bar)) * bar; }   // 鼓動が鳴っていれば、小節の長さにそろえる
+    LOOP.len = len; LOOP.st = 'play'; LOOP.t0 = t; LOOP.ph = 0; toast('🔁 ループ: 回しています（' + len.toFixed(1) + ' 秒。もう一度 = 重ねる・長押し = 消す）');
+  }
+  else if (LOOP.st === 'play'){ LOOP.st = 'dub'; toast('🔴 ループ: 重ね録り中（もう一度 = 戻る）'); }
+  else { LOOP.st = 'play'; toast('🔁 ループ: 回しています'); }
+  menuDirty(); hudPC();
+}
+function loopClear(){ LOOP.st = 'off'; LOOP.ev = []; LOOP.len = 0; toast('🗑 ループを消しました'); menuDirty(); hudPC(); }
+const loopRing = new T.Mesh(new T.RingGeometry(0.85, 0.9, 96, 1), addMat({side:T.DoubleSide, uniforms:{uP:{value:0}, uC:{value:new T.Color()}, uA:{value:0}},
+  vertexShader:`varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+  fragmentShader:`uniform float uP, uA; uniform vec3 uC; varying vec2 vP; void main(){ float a = atan(vP.y, vP.x) / 6.28318 + .5; float on = step(a, uP); float hd = smoothstep(.025, 0., abs(a - uP)); gl_FragColor = vec4(uC * (.18 + on * .6 + hd * 1.4) * uA, 1.); }`}));
+loopRing.rotation.x = -Math.PI / 2; loopRing.visible = false; scene.add(loopRing);   // 足もとの輪 = ループのどこを回っているか（録音中は赤）
+function loopTick(){
+  const U = loopRing.material.uniforms;
+  loopRing.visible = LOOP.st !== 'off'; loopRing.position.set(head.x, 0.02, head.z);
+  if (LOOP.st === 'off') return;
+  U.uA.value = 1; U.uC.value.set(LOOP.st === 'play' ? 0x4ff2ff : 0xff3060);
+  if (LOOP.st === 'rec'){ U.uP.value = ((t - LOOP.t0) / 4) % 1; return; }
+  const ph = (t - LOOP.t0) % LOOP.len, prev = LOOP.ph, wrap = ph < prev;
+  if (wrap) for (const e of LOOP.ev) e.fresh = false;
+  for (const e of LOOP.ev){ if (e.fresh) continue; if (wrap ? (e.at > prev || e.at <= ph) : (e.at > prev && e.at <= ph)){ noteFx(e.k, e.side, e.pos, e.vel, 0.45, null); LOOP.fired++; } }
+  LOOP.ph = ph; U.uP.value = ph / LOOP.len;
+}
+
+/* ---- 🌸 見つめると咲く: じっと見つめた所（1.8 秒）に、光の花（曼荼羅）が開く ---- */
+const GZ = {on:true, dir:new T.Vector3(0, 0, -1), dwell:0, cool:0, count:0};
+const BL = Array.from({length:8}, () => {
+  const u = {uAge:{value:0}, uLife:{value:14}, uSeed:{value:0}, uKick:SKY.uKick, ...PU};
+  const m = new T.Mesh(new T.PlaneGeometry(1, 1), addMat({uniforms:u, side:T.DoubleSide,
+    vertexShader:`varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+    fragmentShader:`uniform float uAge, uLife, uSeed, uKick; varying vec2 vU;
+${PAL_GLSL}
+void main(){
+  vec2 p = (vU - .5) * 2.; float r = length(p), a = atan(p.y, p.x);
+  float open = smoothstep(0., 2.4, uAge), fade = 1. - smoothstep(uLife - 4., uLife, uAge), k = 5. + floor(uSeed * 4.);
+  vec3 col = vec3(0.);
+  for (int L = 0; L < 4; L++){   // 花びらを 4 重に（内側ほど小さく、交互に逆向きに回る）
+    float fl = float(L), sz = open * (1. - fl * .2), rr = r / max(sz, .001);
+    float pet = abs(cos((a + fl * .35 + uAge * (.08 + fl * .03) * (mod(fl, 2.) * 2. - 1.)) * k * .5));
+    float body = smoothstep(pet, pet - .12, rr) * smoothstep(0., .08, rr), edge = smoothstep(.05, 0., abs(rr - pet)) * step(rr, 1.);
+    col += pal(fl * .17 + uSeed * 3. + rr * .25) * (body * .22 + edge * .8);
+  }
+  col += pal(uSeed * 3. + .5) * smoothstep(.16 * open + .001, 0., r) * 1.4;
+  col *= fade * (1. + uKick * .4) * smoothstep(1., .9, r);
+  gl_FragColor = vec4(col, 1.);
+}`}));
+  m.visible = false; m.frustumCulled = false; scene.add(m);
+  return {m, u, born:-99, spin:0};
+});
+let blNext = 0;
+function spawnBloom(dir, dist){
+  const b = BL[blNext]; blNext = (blNext + 1) % BL.length;
+  b.m.position.copy(head).addScaledVector(dir, dist || rnd(6, 9)); b.m.lookAt(head); b.m.scale.setScalar(rnd(2.6, 4.2));
+  b.u.uSeed.value = Math.random(); b.born = t; b.spin = rnd(-0.12, 0.12); b.m.visible = true; GZ.count++;
+  const k = 9 + Math.floor(Math.random() * 4); bell(noteFreq(k, 'right'), b.m.position, 0.55); bell(noteFreq(k + 2, 'right'), b.m.position, 0.38);   // 遠くで、やわらかい和音
+}
+function gazeSet(on){ GZ.on = !!on; GZ.dwell = 0; toast(GZ.on ? '🌸 見つめると咲く: 入（じっと見つめた所に、花が開く）' : '🌸 見つめると咲く: 切'); menuDirty(); }
+function gazeTick(dt){
+  for (const b of BL){ if (!b.m.visible) continue; b.u.uAge.value = t - b.born; b.m.rotateZ(b.spin * dt); if (t - b.born > 14) b.m.visible = false; }
+  if (!GZ.on || !started || MB.open) return;
+  if (GZ.dir.angleTo(headFwd) < 0.07) GZ.dwell += dt; else { GZ.dwell = 0; GZ.dir.copy(headFwd); }
+  GZ.cool -= dt;
+  if (GZ.dwell > 1.8 && GZ.cool <= 0){ spawnBloom(headFwd); GZ.dwell = 0; GZ.cool = 4; GZ.dir.copy(headFwd); }
+}
+
+/* ---- 🔔 空中の鐘: 腕の届く所に結晶が 10 個、弧に並んで浮かぶ。手で触れると鳴る（左から右へ、音が上がる） ---- */
+const TB = {on:false, items:[], c:new T.Vector3(), yaw:0, rings:0};
+const TBG = new T.IcosahedronGeometry(0.042, 1);
+for (let i = 0; i < 10; i++){
+  const u = {uC:{value:new T.Color()}, uG:{value:0}};
+  const m = new T.Mesh(TBG, addMat({uniforms:u, vertexShader:FRES_VS,
+    fragmentShader:`uniform vec3 uC; uniform float uG; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1. - abs(dot(normalize(vN), normalize(vV))), 1.6); gl_FragColor = vec4(uC * (.18 + f * 1.1 + uG * 1.4), 1.); }`}));
+  const halo = new T.Sprite(new T.SpriteMaterial({map:haloTex, transparent:true, depthWrite:false, blending:T.AdditiveBlending, opacity:0.55})); halo.scale.setScalar(0.12);
+  const g = new T.Group(); g.add(m, halo); g.visible = false; scene.add(g);
+  TB.items.push({g, m, halo, u, k:i + 3, glow:0, wob:0, touch:[false, false], last:-9});
+}
+function bellsSet(on, quiet){
+  TB.on = !!on;
+  if (TB.on){ headPose(); TB.c.copy(head); _v.copy(headFwd).setY(0); if (_v.lengthSq() < 1e-4) _v.set(0, 0, -1); _v.normalize(); TB.yaw = Math.atan2(_v.x, _v.z); }
+  if (!quiet) toast(TB.on ? '🔔 空中の鐘: 入（まわりの結晶に、手で触れると鳴る）' : '🔔 空中の鐘: 切'); menuDirty();
+}
+function bellsTick(dt){
+  for (const it of TB.items) it.g.visible = TB.on;
+  if (!TB.on) return;
+  const xr = xrOn(), R = xr ? 0.6 : 1.8, dy0 = xr ? -0.33 : -0.22, k = 1 - Math.exp(-dt * 1.5), rin = xr ? 0.075 : 0.16;
+  if (Math.hypot(head.x - TB.c.x, head.z - TB.c.z) > 0.5){ TB.c.x = lerp(TB.c.x, head.x, k); TB.c.z = lerp(TB.c.z, head.z, k); }   // 歩いて離れたら、ついてくる
+  TB.c.y = lerp(TB.c.y, head.y, k * 0.5);                                                                                          // 座る・立つにも、ゆっくり合わせる
+  TB.items.forEach((it, i) => {
+    const a = TB.yaw + (i / (TB.items.length - 1) - 0.5) * 3.4;
+    it.g.position.set(TB.c.x + Math.sin(a) * R, TB.c.y + dy0 + Math.sin(i * 0.9) * (xr ? 0.07 : 0.16) + Math.sin(t * 0.7 + i) * 0.015, TB.c.z + Math.cos(a) * R);
+    it.glow = Math.max(0, it.glow - dt * 1.8); it.wob = Math.max(0, it.wob - dt * 3);
+    palCol(it.k / 15 + t * 0.01, it.u.uC.value); it.u.uG.value = it.glow; it.halo.material.color.copy(it.u.uC.value); it.halo.scale.setScalar(0.1 + it.glow * 0.25);
+    it.m.rotation.y += dt * (0.3 + it.glow * 4); it.m.rotation.x += dt * 0.2;
+    it.m.scale.setScalar(1 + Math.sin(t * 30) * it.wob * 0.15 + it.glow * 0.25 + kickV * 0.12);
+    hands.forEach((h, j) => {
+      if (!h.on){ it.touch[j] = false; return; }
+      const d = h.pos.distanceTo(it.g.position);
+      if (d < rin && !it.touch[j]){
+        it.touch[j] = true;
+        if (t - it.last > 0.12){ it.last = t; it.glow = 1; it.wob = 1; TB.rings++; idle = 0;
+          const c = noteFx(it.k, 'right', it.g.position, clamp(0.55 + h.speed * 0.2, 0.55, 1), 0.6, h.vel); h.color.copy(c); h.pulse = 1; buzz(h, 0.6, 30); loopRec(it.k, 'right', it.g.position, 0.8); }
+      } else if (d > rin * 1.5) it.touch[j] = false;
+    });
+  });
+}
+
+/* ---- 🪞 鏡の分身: 自分の手の光（尾と玉）が、頭のまわりに 4・6・8 人分 ---- */
+const MIR = {n:0, opts:[0, 4, 6, 8]};
+MIR.next = () => MIR.opts[(MIR.opts.indexOf(MIR.n) + 1) % MIR.opts.length];
+for (const h of hands){
+  h.mir = Array.from({length:7}, () => {
+    const tm = new T.Mesh(h.trail.g, h.trail.m.material); tm.matrixAutoUpdate = false; tm.frustumCulled = false; tm.visible = false; scene.add(tm);
+    const sp = new T.Sprite(h.orb.halo.material); sp.visible = false; scene.add(sp);
+    return {tm, sp};
+  });
+}
+function mirSet(n, quiet){ MIR.n = n; if (!quiet) toast(n ? '🪞 鏡の分身: ' + n + ' 人' : '🪞 鏡の分身: なし'); menuDirty(); hudPC(); }
+const _mA = new T.Matrix4(), _mB = new T.Matrix4();
+function mirTick(){
+  for (const h of hands) h.mir.forEach((c, i) => {
+    const on = MIR.n > 0 && i < MIR.n - 1 && h.on;
+    c.tm.visible = on && h.trail.m.visible; c.sp.visible = on;
+    if (!on) return;
+    c.tm.matrix.makeTranslation(head.x, 0, head.z).multiply(_mA.makeRotationY((i + 1) * 6.28318 / MIR.n)).multiply(_mB.makeTranslation(-head.x, 0, -head.z));   // 頭を軸に、ぐるっと回した位置
+    c.tm.matrixWorldNeedsUpdate = true;
+    c.sp.position.copy(h.pos).applyMatrix4(c.tm.matrix); c.sp.scale.copy(h.orb.halo.scale);
+  });
+}
+
+/* ---- 🌀 トンネル: 正面 9m 先から、光の輪が奥へ吸いこまれていく（輪は向こうへ流れる。こちらへは来ない） ---- */
+const TUN = {on:false, a:0, ph:0, g:new T.Group(), rings:[], core:null};
+TUN.g.visible = false; scene.add(TUN.g);
+{ const RG2 = [new T.RingGeometry(0.9, 1, 6, 1), new T.RingGeometry(0.92, 1, 72, 1)];
+  for (let i = 0; i < 36; i++){
+    const u = {uC:{value:new T.Color()}, uA:{value:0}};
+    const m = new T.Mesh(RG2[i % 2], addMat({uniforms:u, side:T.DoubleSide, vertexShader:`void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+      fragmentShader:`uniform vec3 uC; uniform float uA; void main(){ gl_FragColor = vec4(uC * uA, 1.); }`}));
+    m.frustumCulled = false; TUN.g.add(m); TUN.rings.push({m, u, f:i / 36});
+  }
+  TUN.core = new T.Sprite(new T.SpriteMaterial({map:haloTex, transparent:true, depthWrite:false, blending:T.AdditiveBlending, opacity:0})); TUN.core.scale.setScalar(9); TUN.core.position.z = -58; TUN.g.add(TUN.core);
+}
+function tunSet(on, quiet){
+  TUN.on = !!on;
+  if (TUN.on){ headPose(); _v.copy(headFwd).setY(0); if (_v.lengthSq() < 1e-4) _v.set(0, 0, -1); _v.normalize(); TUN.g.position.copy(head).addScaledVector(_v, 9); TUN.g.lookAt(head.x, TUN.g.position.y, head.z); }
+  if (!quiet) toast(TUN.on ? '🌀 トンネル: 入（正面に）' : '🌀 トンネル: 切'); menuDirty();
+}
+function tunTick(dt){
+  TUN.a = lerp(TUN.a, TUN.on ? 1 : 0, 1 - Math.exp(-dt * 1.2)); TUN.g.visible = TUN.a > 0.01;
+  if (!TUN.g.visible) return;
+  TUN.ph += dt * (0.05 + warp * 0.08 + kickV * 0.04) * flowBase;
+  for (const r of TUN.rings){
+    const f = (r.f + TUN.ph) % 1, s = 2.2 + Math.sin(f * 9 + t * 0.6) * 0.5 + f * 1.5;
+    r.m.position.set(Math.sin(f * 6 + t * 0.3) * f * 2.2, Math.cos(f * 5 + t * 0.25) * f * 1.6, -f * 55); r.m.scale.setScalar(s); r.m.rotation.z = f * 4 + t * 0.15;
+    palCol(f * 0.8 + t * 0.02, r.u.uC.value); r.u.uA.value = TUN.a * sm(0, 0.12, f) * (1 - sm(0.75, 1, f)) * (0.55 + kickV * 0.6);
+  }
+  palCol(t * 0.02 + 0.5, TUN.core.material.color); TUN.core.material.opacity = TUN.a * (0.55 + kickV * 0.4);
+}
+
+/* ---- ✨ 星くずの形（v4 で 22 個 ＋ 文字）: 静か = 銀河・繭・蓮の花・光の水面・オーロラ・雪の結晶 ／ ふつう = らせん・8 の字・土星・メビウスの輪・結び目・花の曼荼羅 ／ 高まり = 竜巻・光のドーナツ・光の雨・結晶格子・渦 ／ 山 = 光のトンネル・ワープ・超新星・光の柱・星 ---- */
+// 形は「頭のまわりを、その時に向いていた向きから見た位置」（x = 右・y = 上（頭の高さから）・z = 前）で作る
+// 止まった形 = ばねで集まる ／ 流れる形（dyn）= 毎コマ作り直して追いかける（wrap = 端から端へ飛ぶ粒は、一瞬で移す）／ spin = ゆっくり回る
+const SH = {mode:0, names:[], tgt:new Float32Array(DN * 3), loc:new Float32Array(DN * 3), k:0, c:new T.Vector3(), f:new T.Vector3(0, 0, -1), r:new T.Vector3(1, 0, 0), X:new T.Vector3(1, 0, 0), Z:new T.Vector3(0, 0, -1),
+  t0:0, spin:0, dyn:false, wrap:false, pulse:1, txt:new Float32Array(2), txtN:1, word:''};
+const SR2 = new Float32Array(DN), SR3 = new Float32Array(DN); for (let i = 0; i < DN; i++){ SR2[i] = Math.random(); SR3[i] = Math.random(); }
+const fr1 = (x) => x - Math.floor(x), TAU = Math.PI * 2, _so = [0, 0, 0];
+const SHAPES = [
+  {name:'なし', lv:-2},
+  {name:'銀河', lv:0, spin:0.03, fn:(i, q, a, b, c, u, o) => { const r = 1.6 + Math.pow(q, 0.6) * 15, th = (i % 3) * 2.0944 + r * 0.42 + (b - 0.5) * 0.5; o[0] = Math.cos(th) * r; o[1] = -0.55 + (c - 0.5) * 0.25 * (1 + r * 0.06); o[2] = Math.sin(th) * r; }},
+  {name:'らせん', lv:1, spin:0.12, fn:(i, q, a, b, c, u, o) => { const th = q * 46 + (i % 2) * Math.PI, r = 2.6 + (b - 0.5) * 0.25; o[0] = Math.cos(th) * r; o[1] = -2 + q * 12; o[2] = Math.sin(th) * r; }},
+  {name:'繭', lv:0, spin:0.05, fn:(i, q, a, b, c, u, o) => { const y = 1 - 2 * (i + 0.5) / DN, rr = Math.sqrt(1 - y * y), th = i * 2.39996, R = 2.3 + (a - 0.5) * 0.12; o[0] = Math.cos(th) * rr * R; o[1] = y * R; o[2] = Math.sin(th) * rr * R; }},
+  {name:'蓮の花', lv:0, spin:0.04, fn:(i, q, a, b, c, u, o) => {   // 5 重の花びらの、まん中に立つ
+    const L = i % 5, th = b * TAU, pet = Math.pow(Math.abs(Math.cos(4 * (th + L * Math.PI / 8))), 0.6), R = 2 + L * 1.7, rad = R * pet * Math.sqrt(c) + 0.6;
+    o[0] = Math.cos(th) * rad; o[1] = -1.25 + Math.pow(rad / (R + 0.6), 2) * (0.5 + L * 0.55); o[2] = Math.sin(th) * rad; }},
+  {name:'光の水面', lv:0, dyn:true, fn:(i, q, a, b, c, u, o) => { const r = 0.9 + Math.sqrt(b) * 16, th = c * TAU; o[0] = Math.cos(th) * r; o[2] = Math.sin(th) * r; o[1] = -1.2 + 0.22 * Math.sin(r * 1.1 - u * 1.6) + 0.12 * Math.sin(th * 6 + r * 0.4 + u * 0.7); }},
+  {name:'オーロラ', lv:0, dyn:true, fn:(i, q, a, b, c, u, o) => { const k = i % 3, th = (b - 0.5) * 2.6 + k * 2.1, R = 12 + k * 3 + Math.sin(th * 3 + u * 0.3) * 1.5;
+    o[0] = Math.sin(th) * R; o[2] = Math.cos(th) * R; o[1] = 2.5 + c * 6 * (0.6 + 0.4 * Math.sin(th * 4 + u * 0.5)) + Math.sin(th * 5 + u * 0.8) * 0.8; }},
+  {name:'雪の結晶', lv:0, dyn:true, fn:(i, q, a, b, c, u, o) => {   // 正面の 6 本の腕と、枝
+    const arm = i % 6; let x, y;
+    if (c < 0.45){ x = b * 5.4; y = (a - 0.5) * 0.08; } else { const d0 = 0.9 + Math.floor(fr1(c * 7.31) * 6) * 0.75, s = b * (5.6 - d0) * 0.45, sd = fr1(a * 13.7) < 0.5 ? 1 : -1; x = d0 + s * 0.5; y = sd * s * 0.866; }
+    const an = arm * Math.PI / 3 + u * 0.06, ca = Math.cos(an), sa = Math.sin(an); o[0] = x * ca - y * sa; o[1] = 0.6 + x * sa + y * ca; o[2] = 11 + (a - 0.5) * 0.3; }},
+  {name:'8 の字', lv:1, dyn:true, fn:(i, q, a, b, c, u, o) => {   // 交わる所は、頭の上
+    const s = q * TAU + u * 0.35, d = 1 + Math.sin(s) ** 2, R = 6.5;
+    o[0] = R * Math.cos(s) / d + (b - 0.5) * 0.5; o[2] = R * Math.sin(s) * Math.cos(s) / d + (c - 0.5) * 0.5; o[1] = 2.4 * (1 - Math.abs(Math.cos(s))) - 0.3 + (a - 0.5) * 0.4; }},
+  {name:'土星', lv:1, dyn:true, fn:(i, q, a, b, c, u, o) => {   // 正面 12m に、星と輪
+    let x, y, z;
+    if (i % 5 < 3){ const yy = 1 - 2 * b, rr = Math.sqrt(1 - yy * yy), th = c * TAU + u * 0.2; x = Math.cos(th) * rr * 2.3; y = yy * 2.3; z = Math.sin(th) * rr * 2.3; }
+    else { const r = 3.4 + Math.sqrt(b) * 2.4, th = c * TAU + u * (0.5 / r), tl = 0.42; x = Math.cos(th) * r; const y0 = (a - 0.5) * 0.06, z0 = Math.sin(th) * r; y = y0 * Math.cos(tl) - z0 * Math.sin(tl); z = y0 * Math.sin(tl) + z0 * Math.cos(tl); }
+    o[0] = x; o[1] = y + 1.2; o[2] = z + 12; }},
+  {name:'メビウスの輪', lv:1, spin:0.1, fn:(i, q, a, b, c, u, o) => { const s = q * TAU, v = (b - 0.5) * 1.8, R = 4.6; o[0] = (R + v * Math.cos(s / 2)) * Math.cos(s); o[2] = (R + v * Math.cos(s / 2)) * Math.sin(s); o[1] = 0.4 + v * Math.sin(s / 2); }},
+  {name:'結び目', lv:1, spin:0.09, fn:(i, q, a, b, c, u, o) => { const s = q * TAU, r = 3.3 + 1.4 * Math.cos(3 * s), j = 0.28; o[0] = r * Math.cos(2 * s) + (a - 0.5) * j; o[2] = r * Math.sin(2 * s) + (b - 0.5) * j; o[1] = 0.6 + 1.5 * Math.sin(3 * s) + (c - 0.5) * j; }},
+  {name:'花の曼荼羅', lv:1, dyn:true, fn:(i, q, a, b, c, u, o) => {   // 正面の壁に、4 重の花（交互に逆へ回る）
+    const L = i % 4, k = [6, 8, 12, 5][L], R = [5.6, 4.2, 2.9, 1.6][L], th = b * TAU, pet = 0.3 + 0.7 * Math.abs(Math.cos(k * th / 2)), rad = R * pet * (c < 0.6 ? 1 : Math.sqrt(fr1(c * 5.1))), an = th + u * 0.07 * (L % 2 ? 1 : -1);
+    o[0] = Math.cos(an) * rad; o[1] = 0.6 + Math.sin(an) * rad; o[2] = 10 - L * 0.4; }},
+  {name:'竜巻', lv:2, dyn:true, wrap:true, fn:(i, q, a, b, c, u, o) => { const h = fr1(a * 3.1 + b * 0.37 + u * 0.09) * 14 - 1.6, r = 1.0 + (h + 1.6) * 0.42 + (c - 0.5) * 0.3, th = q * 900 + u * (2.4 - (h + 1.6) * 0.09); o[0] = Math.cos(th) * r; o[2] = Math.sin(th) * r; o[1] = h; }},
+  {name:'光のドーナツ', lv:2, dyn:true, fn:(i, q, a, b, c, u, o) => { const U = b * TAU + u * 0.12, V = c * TAU + u * 1.1, R = 4.4, r = 1.25; o[0] = (R + r * Math.cos(V)) * Math.cos(U); o[2] = (R + r * Math.cos(V)) * Math.sin(U); o[1] = 0.2 + r * Math.sin(V); }},
+  {name:'光の雨', lv:2, dyn:true, wrap:true, fn:(i, q, a, b, c, u, o) => {   // 500 本の、光のしずくの列
+    const col = i % 500, R = 2.4 + fr1(col * 0.618) * 13, th = fr1(col * 0.7548) * TAU; o[0] = Math.cos(th) * R; o[2] = Math.sin(th) * R; o[1] = 9 - fr1(a + u * (0.3 + fr1(col * 0.31) * 0.2)) * 10.6; }},
+  {name:'結晶格子', lv:2, spin:0.05, fn:(i, q, a, b, c, u, o) => { const N = 6, S = 3.2, n = Math.floor(a * N * N * N), p = [(n % N - 2.5) * S, (Math.floor(n / N) % N - 1.5) * S, (Math.floor(n / N / N) - 2.5) * S]; p[i % 3] += b * S; o[0] = p[0]; o[1] = p[1]; o[2] = p[2]; }},
+  {name:'渦', lv:2, dyn:true, fn:(i, q, a, b, c, u, o) => { const r = 0.4 + Math.sqrt(b) * 7.5, th = (i % 5) * TAU / 5 + Math.log(r) * 2.4 + u * 0.7 + (c - 0.5) * 0.35; o[0] = Math.cos(th) * r; o[1] = 0.6 + Math.sin(th) * r; o[2] = 18 - r * 0.6; }},
+  {name:'光のトンネル', lv:3, dyn:true, wrap:true, fn:(i, q, a, b, c, u, o) => { const z = 22 - fr1(a + u * 0.3) * 26, rr = 3.2 + Math.sin(z * 0.3 + u) * 0.45, th = b * TAU + z * 0.12 + u * 0.4; o[0] = Math.cos(th) * rr; o[1] = 0.2 + Math.sin(th) * rr; o[2] = z; }},
+  {name:'ワープ', lv:3, dyn:true, wrap:true, fn:(i, q, a, b, c, u, o) => { const ph = b * TAU, s = 0.12 + c * 0.95, d = 22 - fr1(a + u * 0.55) * 20.5; o[0] = Math.sin(s) * Math.cos(ph) * d; o[1] = 0.3 + Math.sin(s) * Math.sin(ph) * d; o[2] = Math.cos(s) * d; }},
+  {name:'超新星', lv:3, dyn:true, wrap:true, fn:(i, q, a, b, c, u, o) => { const r = fr1(u * 0.3 + (i % 3) / 3) * 9, y = 1 - 2 * b, rr = Math.sqrt(1 - y * y), th = c * TAU; o[0] = Math.cos(th) * rr * r; o[1] = 1 + y * r; o[2] = 13 + Math.sin(th) * rr * r; }},
+  {name:'光の柱', lv:3, spin:0.15, fn:(i, q, a, b, c, u, o) => { const th = (i % 12) * Math.PI / 6, R = 7 + (c - 0.5) * 0.3; o[0] = Math.cos(th) * R + (a - 0.5) * 0.3; o[2] = Math.sin(th) * R + (fr1(a * 7.7) - 0.5) * 0.3; o[1] = -1.6 + b * 17; }},
+  {name:'星', lv:3, dyn:true, fn:(i, q, a, b, c, u, o) => {   // 正面の、回る五芒星
+    const k = Math.floor(b * 10), s = fr1(b * 10), r0 = k % 2 ? 2.2 : 5.6, r1 = k % 2 ? 5.6 : 2.2, a0 = k * Math.PI / 5, a1 = a0 + Math.PI / 5, f = c < 0.7 ? 1 : Math.sqrt(fr1(c * 3.7));
+    const x = (Math.sin(a0) * r0 + (Math.sin(a1) * r1 - Math.sin(a0) * r0) * s) * f, y = (Math.cos(a0) * r0 + (Math.cos(a1) * r1 - Math.cos(a0) * r0) * s) * f, an = u * 0.15, ca = Math.cos(an), sa = Math.sin(an);
+    o[0] = x * ca - y * sa; o[1] = 0.8 + x * sa + y * ca; o[2] = 11; }},
+  {name:'文字', lv:-1, text:true, fn:(i, q, a, b, c, u, o) => { const j = (i % SH.txtN) * 2; o[0] = SH.txt[j] + (b - 0.5) * 0.03; o[1] = SH.txt[j + 1] + (c - 0.5) * 0.03; o[2] = 8 + (a - 0.5) * 0.3; }},
+];
+SH.names = SHAPES.map((s) => s.name);
+const TEXT_ID = SHAPES.findIndex((s) => s.text);
+function shapeText(word){   // 文字を、粒の置き場所（正面 9m・幅 9.5m）にする
+  SH.word = word = String(word || 'TRANCE BLOOM');
+  const cv = shapeText.cv || (shapeText.cv = document.createElement('canvas')); cv.width = 1024; cv.height = 256;
+  const x = cv.getContext('2d', {willReadFrequently:true}); x.clearRect(0, 0, 1024, 256); x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  let fs = 228; x.font = '900 ' + fs + 'px "Noto Sans JP", sans-serif'; const w = x.measureText(word).width; if (w > 980){ fs = Math.floor(fs * 980 / w); x.font = '900 ' + fs + 'px "Noto Sans JP", sans-serif'; }
+  x.fillText(word, 512, 132);
+  const d = x.getImageData(0, 0, 1024, 256).data, pts = [];
+  for (let py = 0; py < 256; py += 2) for (let px = 0; px < 1024; px += 2) if (d[(py * 1024 + px) * 4 + 3] > 110) pts.push(px, py);
+  let n = pts.length / 2; if (!n){ pts.push(512, 128); n = 1; }
+  const m = Math.min(n, 9000), out = new Float32Array(m * 2), sc = 9.5 / 1024;
+  for (let k = 0; k < m; k++){ const j = Math.floor(k * n / m) * 2; out[k * 2] = (pts[j] - 512) * sc; out[k * 2 + 1] = (128 - pts[j + 1]) * sc + 0.5; }
+  SH.txt = out; SH.txtN = m;
+}
+function shapeFill(u){ const S = SHAPES[SH.mode], L = SH.loc, o = _so; for (let i = 0; i < DN; i++){ S.fn(i, i / DN, dSeed[i], SR2[i], SR3[i], u, o); const i3 = i * 3; L[i3] = o[0]; L[i3 + 1] = o[1]; L[i3 + 2] = o[2]; } }
+function shapeFrame(force){   // 毎コマ: 流れる形を作り直す ／ 回る向き
+  if (!SH.mode || (SH.k < 0.001 && !force)) return;
+  const u = t - SH.t0; if (SH.dyn && !force) shapeFill(u);
+  const a = SH.spin * u, ca = Math.cos(a), sa = Math.sin(a);
+  SH.X.set(SH.r.x * ca + SH.f.x * sa, 0, SH.r.z * ca + SH.f.z * sa); SH.Z.set(SH.f.x * ca - SH.r.x * sa, 0, SH.f.z * ca - SH.r.z * sa);
+}
+function shapeSet(m, quiet, word){
+  SH.mode = (m + SHAPES.length) % SHAPES.length; const S = SHAPES[SH.mode];
+  if (S.text) shapeText(word || SH.word);
+  if (!quiet) toast('✨ 星くずの形: ' + S.name); menuDirty(); hudPC();
+  if (!SH.mode) return;
+  headPose(); SH.c.copy(head); SH.f.copy(headFwd).setY(0); if (SH.f.lengthSq() < 1e-4) SH.f.set(0, 0, -1); SH.f.normalize(); SH.r.set(-SH.f.z, 0, SH.f.x);
+  SH.t0 = t; SH.spin = S.spin || 0; SH.dyn = !!S.dyn; SH.wrap = !!S.wrap;
+  shapeFill(0); shapeFrame(true);
+}
+
+/* ---- 🫧 呼吸の玉: 10 秒で 1 回（ふくらむ = すう ／ しぼむ = はく） ---- */
+const BR = {on:false, a:0, g:new T.Group()};
+const brOrb = new T.Mesh(new T.SphereGeometry(0.1, 32, 16), addMat({uniforms:{uC:{value:new T.Color()}, uA:{value:0}}, vertexShader:FRES_VS,
+  fragmentShader:`uniform vec3 uC; uniform float uA; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1. - abs(dot(normalize(vN), normalize(vV))), 1.4); gl_FragColor = vec4(uC * (.35 + f) * uA, 1.); }`}));
+const brRing = new T.Mesh(new T.RingGeometry(0.2, 0.212, 96), new T.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0, blending:T.AdditiveBlending, depthWrite:false, side:T.DoubleSide}));
+const brTex = ['すって…', 'はいて…'].map((s) => { const c = document.createElement('canvas'); c.width = 512; c.height = 128; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.font = 'bold 64px "Noto Sans JP", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(s, 256, 66); const tx = new T.CanvasTexture(c); tx.colorSpace = T.SRGBColorSpace; return tx; });
+const brLab = new T.Mesh(new T.PlaneGeometry(0.4, 0.1), new T.MeshBasicMaterial({map:brTex[0], transparent:true, opacity:0, depthWrite:false, toneMapped:false}));
+brLab.position.y = -0.36; BR.g.add(brOrb, brRing, brLab); BR.g.visible = false; scene.add(BR.g);
+function breathSet(on, quiet){ BR.on = !!on; if (BR.on) placeFront(BR.g, xrOn() ? 1.5 : 2.6, xrOn() ? -0.05 : -0.1); if (!quiet) toast(BR.on ? '🫧 呼吸の玉: ふくらむ時にすって、しぼむ時にはく（10 秒で 1 回）' : '🫧 呼吸の玉: 切'); menuDirty(); }
+function breathTick(dt){
+  BR.a = lerp(BR.a, BR.on ? 1 : 0, 1 - Math.exp(-dt * 2)); BR.g.visible = BR.a > 0.01;
+  if (!BR.g.visible) return;
+  brOrb.scale.setScalar(0.6 + breath * 1.1); brRing.scale.setScalar(0.8 + breath * 1.3);
+  palCol(0.55 + breath * 0.25, brOrb.material.uniforms.uC.value); brOrb.material.uniforms.uA.value = BR.a; brRing.material.opacity = BR.a * 0.5;
+  brLab.material.map = brTex[Math.cos(t * Math.PI * 2 / 10) > 0 ? 0 : 1]; brLab.material.opacity = BR.a * 0.85;
+  _v.copy(headFwd).setY(0); if (_v.lengthSq() > 1e-4){ _v.normalize(); const d = xrOn() ? 1.5 : 2.6, k = 1 - Math.exp(-dt * 0.6);   // ゆっくり、正面へついてくる
+    BR.g.position.x = lerp(BR.g.position.x, head.x + _v.x * d, k); BR.g.position.z = lerp(BR.g.position.z, head.z + _v.z * d, k); BR.g.position.y = lerp(BR.g.position.y, head.y - 0.05, k); }
+  BR.g.lookAt(head.x, BR.g.position.y, head.z);
+}
+
+/* ---- v3: 🧭 曼荼羅を正面に ・ 🔭 ズーム（中へ進む／遠ざかる）・ 🌌 世界（液体の曼荼羅・虚数のトンネル・位相の花・粒だけ・銀河の中）・ 🌺 虚数の花 ---- */
+// 10/11 05:47 そうたさん「基本はその円形に並んだ曼荼羅みたいなのが目の前にある角度ですといい」「上昇とか トーンが変わったら その中をまるで拡大して移動しているように変形させつづけていったり、むしろ 縮小しつづけて 遠くなっている空間だったり」
+// 05:49「虚数iの空間みたいなのを意識すると よさそう」「フラクタルノイズみたいな世界自体をけして、パーティクルだけの世界にしたり、銀河のなか、粒粒の星が浮いているだけの世界にしたり 変化とメリハリが欲しい」「キーワードは 貫通トンネル映像 シンメトリー映像。解放。抑揚」
+// ・空の球 = 虚数の平面（リーマン球）: 正面 = 0、真後ろ = ∞、w = tan(θ/2)・e^{iφ}。log w = 正面から真後ろへ、あなたを突き抜けるトンネル（貫通）
+const ZM = {mode:'auto', order:['auto', 'in', 'out', 'stop'], names:{auto:'おまかせ', in:'中へ進む', out:'遠ざかる', stop:'止める'}, ph:0, sp:0, polar:0, jul:0, julOn:false, boost:0};
+function zoomSet(m, quiet){ ZM.mode = m; if (!quiet) toast('🔭 ズーム: ' + ZM.names[m] + (m === 'auto' ? '（鼓動・色が変わる・握ると、中へ進む）' : '')); menuDirty(); hudPC(); }
+const zoomNext = () => zoomSet(ZM.order[(ZM.order.indexOf(ZM.mode) + 1) % ZM.order.length]);
+function juliaSet(on, quiet){ ZM.julOn = !!on; if (!quiet) toast(on ? '🌺 虚数の花（ジュリア集合）: 入' : '🌺 虚数の花: 切'); menuDirty(); hudPC(); }
+function zoomTick(dt){
+  ZM.boost = Math.max(0, ZM.boost - dt / 10);   // 色・鼓動を変えたあと 10 秒ほど、中へ進む
+  let want = 0;
+  if (ZM.mode === 'in') want = 0.16; else if (ZM.mode === 'out') want = -0.16;
+  else if (ZM.mode === 'auto') want = JR.on ? JR.zoom : (BEAT.idx >= 2 ? 0.05 + BEAT.bpm / 128 * 0.1 : 0.035 * Math.sin(t / 47)) + ZM.boost * 0.14;
+  if (ZM.mode !== 'stop') want += warp * 0.12;   // 握ると、中へ
+  ZM.sp = lerp(ZM.sp, want, 1 - Math.exp(-dt * 0.6)); ZM.ph += ZM.sp * dt;
+  const pw = ZM.mode === 'stop' || JR.on ? 0 : ZM.mode !== 'auto' ? 1 : clamp(Math.abs(ZM.sp) * 7 + ZM.boost * 0.6 + (0.5 + 0.5 * Math.sin(t / 83 - 1.6)) * 0.35, 0, 1);   // おまかせ = 何もしなくても、ゆっくり液体 ⇄ トンネルを行き来する
+  ZM.polar = lerp(ZM.polar, pw, 1 - Math.exp(-dt * 0.35));
+  ZM.jul = lerp(ZM.jul, ZM.julOn || (JR.on && JR.julia) ? 1 : 0, 1 - Math.exp(-dt * 0.5));
+  const a = t * 0.045 + kickV * 0.015;   // ジュリア集合の c = 0.7885・e^{ia}（形が、ゆっくり変わりつづける）
+  SKY.uZoom.value = ZM.ph; SKY.uJulia.value = ZM.jul; SKY.uJc.value.set(0.7885 * Math.cos(a), 0.7885 * Math.sin(a)); SKY.uJz.value = Math.sin(t * 0.06) * 0.35;
+}
+// 曼荼羅の中心 = 正面（入れかえは、まばたきの間に。空ごと回すと酔うので）
+const FR = {pend:null, b:0, dir:0}, _fr = new T.Vector3(), _fu = new T.Vector3(), UP = new T.Vector3(0, 1, 0);
+function frameSet(quiet){
+  headPose(); _v.copy(headFwd).setY(0); if (_v.lengthSq() < 1e-4) _v.set(0, 0, -1); _v.normalize();
+  _fr.crossVectors(_v, UP).normalize(); _fu.crossVectors(_fr, _v);
+  FR.pend = new T.Matrix3().set(_fr.x, _fu.x, _v.x, _fr.y, _fu.y, _v.y, _fr.z, _fu.z, _v.z);
+  if (quiet === 'now'){ SKY.uFrame.value.copy(FR.pend); FR.pend = null; return; }
+  FR.dir = 1; if (!quiet) toast('🧭 曼荼羅を正面に');
+}
+function frameTick(dt){
+  if (FR.dir > 0){ FR.b = Math.min(1, FR.b + dt / 0.25); if (FR.b >= 1){ if (FR.pend){ SKY.uFrame.value.copy(FR.pend); FR.pend = null; } FR.dir = -1; } }
+  else if (FR.dir < 0){ FR.b = Math.max(0, FR.b - dt / 0.4); if (FR.b <= 0) FR.dir = 0; }
+  return 1 - FR.b * 0.9;
+}
+// 世界: 空の見え方・トンネル・位相の花・遠い星・星くずの明るさ（切りかえは、なめらかに。旅の「暗転」だけは一瞬で）
+const WORLDS = [
+  {name:'液体の曼荼羅', sky:1, polar:0, flower:0, far:0, boost:1, spiral:0},
+  {name:'虚数のトンネル', sky:1, polar:1, flower:0, far:0, boost:1, spiral:0.35},
+  {name:'位相の花', sky:1, polar:1, flower:1, far:0, boost:1, spiral:0.12},
+  {name:'粒だけ', sky:0, polar:0, flower:0, far:0.35, boost:1.8, spiral:0},
+  {name:'銀河の中', sky:0.06, polar:0, flower:0, far:1, boost:1.5, spiral:0, shape:1},
+  {name:'🧪 花の深淵', sky:0, polar:0, flower:0, far:0, boost:1.2, spiral:0, gl:0},   // v5（10/12）: GLSL の世界（オリジナル）
+  {name:'🧪 氷晶の峡谷', sky:0, polar:0, flower:0, far:0, boost:1, spiral:0, gl:1},
+  {name:'🧪 雲海の上', sky:0, polar:0, flower:0, far:0, boost:1, spiral:0, gl:2},
+  {name:'🧪 月の地平', sky:0, polar:0, flower:0, far:0, boost:1, spiral:0, gl:3},
+  {name:'🧪 マンデルバルブ', sky:0, polar:0, flower:0, far:0, boost:1.1, spiral:0, gl:4},   // v6（10/12）: 無限の構造物（フラクタル。式はここで一から作ったオリジナル）
+  {name:'🧪 マンデルボックス', sky:0, polar:0, flower:0, far:0, boost:1, spiral:0, gl:5},
+  {name:'🧪 球の洞窟', sky:0, polar:0, flower:0, far:0, boost:1, spiral:0, gl:6},
+  {name:'🧪 無限の回廊', sky:0, polar:0, flower:0, far:0, boost:1, spiral:0, gl:7},
+];
+function glNext(){   // v6: GLSL の世界だけを順に（最後の次は「液体の曼荼羅」= 切）
+  const g = WORLDS[WD.i].gl, n = WORLDS.findIndex((w) => w.gl === (g == null ? 0 : g + 1));
+  worldSet(n >= 0 ? n : 0);
+}
+const WD = {i:0, rate:0.5, sky:1, polar:0, flower:0, far:0, boost:1, spiral:0, byWorld:false};
+function worldSet(i, quiet, rate){
+  WD.i = (i + WORLDS.length) % WORLDS.length; WD.rate = rate || 0.5; const W = WORLDS[WD.i];
+  if (W.shape){ shapeSet(W.shape, true); WD.byWorld = true; } else if (WD.byWorld){ shapeSet(0, true); WD.byWorld = false; }   // 銀河の中 = 星くずを銀河の形に（出たら戻す）
+  if (!quiet) toast('🌌 世界: ' + W.name); menuDirty(); hudPC();
+}
+const FN = 5000, fPos = new Float32Array(FN * 3), fSeed = new Float32Array(FN);
+for (let i = 0; i < FN; i++){ const u = Math.random() * 2 - 1, th = Math.random() * 6.28318, s = Math.sqrt(1 - u * u); fPos[i * 3] = 70 * s * Math.cos(th); fPos[i * 3 + 1] = 70 * u; fPos[i * 3 + 2] = 70 * s * Math.sin(th); fSeed[i] = Math.random(); }
+const fGeo = new T.BufferGeometry(); fGeo.setAttribute('position', new T.BufferAttribute(fPos, 3)); fGeo.setAttribute('aSeed', new T.BufferAttribute(fSeed, 1));
+const farStars = new T.Points(fGeo, addMat({uniforms:{uA:{value:0}, uT:SKY.uT, uPix:DU.uPix},   // 遠い星（銀河の中・粒だけの世界で見える）
+  vertexShader:`attribute float aSeed; uniform float uA, uT, uPix; varying vec3 vC; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); gl_Position = projectionMatrix * mv;
+    float tw = .6 + .4 * sin(uT * (.5 + aSeed * 3.) + aSeed * 90.); gl_PointSize = clamp((.05 + aSeed * aSeed * .22) * uPix / -mv.z, 1., 6.); vC = mix(vec3(.75, .85, 1.), vec3(1., .85, .7), aSeed) * tw * uA * (.4 + aSeed); }`,
+  fragmentShader:DOT_FRAG}));
+farStars.frustumCulled = false; farStars.renderOrder = -9; scene.add(farStars);
+function worldTick(dt){
+  const W = WORLDS[WD.i], k = 1 - Math.exp(-dt * WD.rate);
+  WD.sky = lerp(WD.sky, W.sky, k); WD.polar = lerp(WD.polar, W.polar, k); WD.flower = lerp(WD.flower, W.flower, k); WD.far = lerp(WD.far, W.far, k); WD.boost = lerp(WD.boost, W.boost, k); WD.spiral = lerp(WD.spiral, W.spiral, k);
+  SKY.uSky.value = WD.sky; SKY.uPolar.value = Math.max(WD.polar, ZM.polar); SKY.uFlower.value = WD.flower; SKY.uSpiral.value = WD.spiral;
+  DU.uBoost.value = WD.boost; farStars.material.uniforms.uA.value = WD.far; farStars.visible = WD.far > 0.01; farStars.position.copy(head);
+  const gw = W.gl != null ? 1 : 0; if (gw && W.gl !== GL.idx){ GL.idx = W.gl; GL.mix = 0; glVarSet(GL.pendVar ?? 0, true); } GL.pendVar = null;   // GLSL の世界どうしの切りかえは、暗転から（v7: バリエーションも、そのとき決める。自動演奏・ショーはランダムに）
+  GL.mix = lerp(GL.mix, gw, k); if (GL.mix < 0.002) GL.mix = 0; SKY.uGl.value = GL.mix;
+}
+// 解放: 星くずが、あなたから外へ吹き飛ぶ ＋ 銅鑼
+function release(){
+  headPose();
+  for (let i = 0; i < DN; i++){ const i3 = i * 3, ex = dPos[i3] - head.x, ey = dPos[i3 + 1] - head.y, ez = dPos[i3 + 2] - head.z, d = Math.hypot(ex, ey, ez) + 0.01, k = 7 / (1 + d * 0.15);
+    dVel[i3] += ex / d * k; dVel[i3 + 1] += ey / d * k; dVel[i3 + 2] += ez / d * k; dEn[i] = Math.min(1, dEn[i] + 0.8); }
+  burst = 1; FLOOR.uE.value = 1; gong(); for (const h of hands) if (h.on) buzz(h, 1, 120);
+}
+// せり上がる音（暗転のあいだ）: ノイズが高く・大きくなっていく ＋ のこぎり波が上へすべる
+function riser(sec){
+  const ctx = A.ctx; if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime + 0.02, out = ctx.createGain(); out.connect(A.bus); out.connect(A.revSend);
+  const s = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = noiseBuf(ctx, sec + 0.5); bp.type = 'bandpass'; bp.Q.value = 3;
+  bp.frequency.setValueAtTime(180, now); bp.frequency.exponentialRampToValueAtTime(5000, now + sec);
+  g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.25, now + sec); g.gain.linearRampToValueAtTime(0, now + sec + 0.05);
+  s.connect(bp); bp.connect(g); g.connect(out); s.start(now); s.stop(now + sec + 0.1);
+  const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), og = ctx.createGain(); o.type = 'sawtooth';
+  o.frequency.setValueAtTime(A.base / 4, now); o.frequency.exponentialRampToValueAtTime(A.base * 2, now + sec);
+  lp.type = 'lowpass'; lp.frequency.setValueAtTime(300, now); lp.frequency.exponentialRampToValueAtTime(6000, now + sec);
+  og.gain.setValueAtTime(0.0001, now); og.gain.exponentialRampToValueAtTime(0.06, now + sec); og.gain.linearRampToValueAtTime(0, now + sec + 0.05);
+  o.connect(lp); lp.connect(og); og.connect(out); o.start(now); o.stop(now + sec + 0.1);
+  setTimeout(() => { try { out.disconnect(); } catch (_) {} }, (sec + 1) * 1000);
+}
+
+/* ---- 🚀 旅（8 分）: 闇 → 目覚め → 花 → 鼓動 → 繭 → 吸いこまれる → シンメトリー → 暗転 → 貫通 → 解放 → 漂う → 帰還 → 着地。抑揚 = 静けさと爆発のふり幅 ---- */
+const JR = {on:false, t:0, i:0, dim:1, len:480, zoom:0, julia:false, storm:false, blooms:false, kc:0, nextBloom:0};
+const kalSet = (n) => { kal = n; hudPC(); };
+function jrReset(){ ZM.mode = 'auto'; JR.zoom = 0; JR.julia = false; JR.storm = false; JR.blooms = false; JR.kc = 0; A.droneMul = 1; kalSet(8); mirSet(0, true); tunSet(false, true); shapeSet(0, true); beatSet(0, true); frameSet(true); }
+const JR_STEPS = [
+  [0, () => { toast('🚀 旅に出ます（8 分）。楽な姿勢で、玉に合わせて息を'); jrReset(); worldSet(3, true, 3); breathSet(true, true); setPal(0); A.mode = 1; JR.dim = 0.85; }],   // 闇: 粒だけ
+  [20, () => { worldSet(0, true, 0.15); toast('🌀 目覚め'); }],                                                                                                          // 曼荼羅が、ゆっくり浮かび上がる
+  [50, () => { JR.blooms = true; JR.dim = 0.95; toast('🌸 見つめた所にも、花が咲きます'); }],
+  [80, () => { beatSet(1, true); JR.zoom = 0.03; toast('🥁 鼓動'); }],
+  [110, () => { breathSet(false, true); setPal(3); beatSet(2, true); shapeSet(3, true); JR.zoom = 0.06; JR.dim = 1; toast('✨ 繭'); }],
+  [150, () => { worldSet(1, true, 0.3); beatSet(3, true); mirSet(6, true); kalSet(6); tunSet(true, true); shapeSet(0, true); setPal(4); A.mode = 3; JR.zoom = 0.14; toast('🕳 吸いこまれる ― 虚数のトンネル'); }],
+  [190, () => { worldSet(2, true, 0.4); kalSet(12); mirSet(8, true); JR.julia = true; toast('❄ シンメトリー ― 位相の花'); }],
+  [220, () => { worldSet(3, true, 6); beatSet(0, true); tunSet(false, true); JR.julia = false; JR.blooms = false; shapeSet(3, true); A.droneMul = 0.25; riser(10); toast('…'); }],   // 暗転: 粒だけ・音が引いて、せり上がる音だけ
+  [230, () => { A.droneMul = 1; worldSet(1, true, 8); beatSet(4, true); kalSet(6); tunSet(true, true); shapeSet(0, true); release(); JR.zoom = 0.34; JR.storm = true; JR.julia = true; setPal(1); toast('💥 貫通'); }],   // 爆発: トンネルが戻り、最速で中へ。拍ごとに波紋の嵐
+  [270, () => { worldSet(2, true, 0.5); kalSet(10); }],
+  [300, () => { worldSet(1, true, 0.5); JR.zoom = 0.4; kalSet(8); }],
+  [330, () => { JR.storm = false; beatSet(0, true); tunSet(false, true); mirSet(0, true); JR.julia = false; release(); worldSet(4, true, 3); A.mode = 1; A.space = 0.95; JR.zoom = -0.1; toast('🌌 解放 ― 銀河の中'); }],
+  [390, () => { shapeSet(2, true); JR.blooms = true; toast('🧬 漂う'); }],
+  [420, () => { worldSet(0, true, 0.2); kalSet(8); shapeSet(0, true); setPal(0); A.mode = 0; breathSet(true, true); JR.dim = 0.75; JR.zoom = -0.04; JR.blooms = false; toast('🌙 ゆっくり、戻ってきます'); }],
+  [465, () => { breathSet(false, true); A.space = 0.5; JR.dim = 1; JR.zoom = 0; }],
+  [480, () => journeyEnd(true)],
+];
+const jrLeft = () => { const s = Math.max(0, Math.ceil(JR.len - JR.t)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+function journeyToggle(){ if (JR.on) journeyEnd(false); else { if (SW.on) showSet(false, true); JR.on = true; JR.t = 0; JR.i = 0; idle = 0; menuToggle(false); } menuDirty(); hudPC(); }
+function journeyEnd(done){ JR.on = false; JR.dim = 1; jrReset(); worldSet(0, true, 0.5); breathSet(false, true); A.space = 0.5; A.mode = 0; toast(done ? '🌱 おかえりなさい' : '🚀 旅をやめました'); menuDirty(); hudPC(); }
+function jrKick(){   // 鼓動のキックごと（旅の「貫通」の間）: 波紋の嵐 ／ 16 拍ごとに光が爆ぜる ／ 32 拍ごとに色が変わる
+  if (!JR.on || !JR.storm) return;
+  JR.kc++; headPose(); _v.set(Math.random() * 2 - 1, Math.random() * 1.2 - 0.3, Math.random() * 2 - 1).normalize().multiplyScalar(rnd(2, 5)).add(head); palCol(Math.random(), _c); addRipple(_v, _c, rnd(0.5, 0.9));
+  if (JR.kc % 16 === 0) doBurst();
+  if (JR.kc % 32 === 0) setPal(palIdx + 1);
+}
+function journeyTick(dt){
+  dimV = lerp(dimV, JR.on ? JR.dim : 1, 1 - Math.exp(-dt * 0.5));
+  if (!JR.on) return;
+  JR.t += dt;
+  while (JR.on && JR.i < JR_STEPS.length && JR_STEPS[JR.i][0] <= JR.t){ JR_STEPS[JR.i++][1](); menuDirty(); hudPC(); }
+  if (JR.on && JR.blooms && t > JR.nextBloom){ JR.nextBloom = t + rnd(5, 9); _v.set(rnd(-0.5, 0.5), rnd(-0.15, 0.4), -1).normalize(); _v.applyMatrix3(SKY.uFrame.value); spawnBloom(_v.clone()); }   // 正面のまわりに、ひとりでに花が咲く
+  if (Math.floor(JR.t) !== Math.floor(JR.t - dt)) menuDirty();   // 残り時間の表示
+}
+
+/* ---- v4: 🎆 ショー（NET DIVE の音楽の演出のように、拍と小節で場面が変わり、いろいろ起こる）・🎵 曲で演出 ---- */
+// 10/11 12:04 そうたさん「ネットダイブのときのような演出がいろいろしっかり起こる というアプリ機能もつくってください」
+// ・時計 = 自分の音（ショーの台本で鳴るトランス: 4 小節ごとの場面・ひと息・ため・見せ場）／ 曲（曲をまるごと下調べ → 拍・小節・演出プラン。NET DIVE と同じやり方）
+// ・場面ごとの着せかえ: 世界・万華鏡・星くずの形 22・レーザー 16 本（6 つの並び）・結晶 108 個（6 つの並び）・巨大な枠・光の太陽・音の年輪の床・色
+// ・拍ごと: 脈・結晶がカクッと回る・レーザーが光る／何本か消える・花火（盛り上がりほど多い）・1 文字ずつの文字
+// ・見せ場 ★: 2 小節前から星くずが文字に集まり、音が引く（ため）→ 入った瞬間に、はじけて紙吹雪・花火・ストロボ・衝撃の輪
+const SW = {on:false, song:null, title:'', L:0, step:0, q:[], c:new T.Vector3(0, 1.6, 0), f:new T.Vector3(0, 0, -1), r:new T.Vector3(1, 0, 0), sceneName:'', boost:1, pend:-1, pendBar:0,
+  tame:false, dim:1, dimV:1, pulse:0, strobe:0, period:0.47, lzP:0, lzA:0, lzV:0, crP:0, crA:0, crV:0, trM:0, trA:0, trV:0, frA:0, frV:0, sunA:0, sunV:0, fwRate:0, fwAcc:0, word:0, lastShape:-1,
+  an:null, fd:null, bands:[0, 0, 0], peak:[0.02, 0.02, 0.02], beats:0, bars:0, blocks:0, bigs:0, tames:0, fws:0, confs:0, songs:[], songPg:0, loading:false, t0:0};
+// 自分の音の台本（4 小節 = 1 場面。L = 盛り上がり 0〜3 ／ kick:false = キックなし ／ big = 見せ場 ★（その前の場面の 3〜4 小節めが「ため」）／ open = 幕あけ（はじめの 2 小節は文字））
+const SELF = [{L:1, open:true}, {L:1}, {L:2}, {L:2}, {L:0, kick:false}, {L:1, kick:false}, {L:3, big:true}, {L:3}, {L:3}, {L:2}, {L:2}, {L:0, kick:false}, {L:2},
+  {L:3, big:true}, {L:3}, {L:3}, {L:3}, {L:2}, {L:1}, {L:0}];
+const WORDS = ['TRANCE BLOOM', '解放', 'ひらく', 'i² = −1', '∞', 'BLOOM', 'いま、ここ', 'RELEASE', '光になる', 'e^iπ + 1 = 0', 'FLOW', '虚数の海'];
+const POOLS = [0, 1, 2, 3].map((L) => SHAPES.map((s, i) => (s.lv === L ? i : -1)).filter((i) => i >= 0));
+function pickShape(L){ const P = POOLS[clamp(L, 0, 3)]; let m = P[Math.floor(Math.random() * P.length)]; if (m === SW.lastShape && P.length > 1) m = P[(P.indexOf(m) + 1) % P.length]; SW.lastShape = m; return m; }
+const showWord = () => (SW.song ? SW.title : WORDS[SW.word++ % WORDS.length]);
+function loc(out, x, y, z){ return out.set(SW.c.x + SW.r.x * x + SW.f.x * z, y, SW.c.z + SW.r.z * x + SW.f.z * z); }   // ショーの正面から見た場所（x = 右・z = 前・y = 床からの高さ）
+function showFrame(){ headPose(); SW.c.copy(head); SW.f.copy(headFwd).setY(0); if (SW.f.lengthSq() < 1e-4) SW.f.set(0, 0, -1); SW.f.normalize(); SW.r.set(-SW.f.z, 0, SW.f.x); }
+
+/* 音: 手拍子・シンバル ＋ ショーの台本のドラム（鼓動の 16 分の時計で鳴らす） */
+function bClap(w, g){
+  const ctx = A.ctx, s = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), a = ctx.createGain();
+  s.buffer = BEAT.hat; bp.type = 'bandpass'; bp.frequency.value = 1500; bp.Q.value = 1.1;
+  a.gain.setValueAtTime(0.0001, w); for (const d of [0, 0.011, 0.023]){ a.gain.setValueAtTime(g, w + d); a.gain.exponentialRampToValueAtTime(g * 0.25, w + d + 0.009); }
+  a.gain.setValueAtTime(g * 0.8, w + 0.034); a.gain.exponentialRampToValueAtTime(0.0001, w + 0.2);
+  s.connect(bp); bp.connect(a); a.connect(BEAT.bus); a.connect(A.revSend); s.start(w, Math.random() * 0.5); s.stop(w + 0.25);
+}
+function bCrash(w, g){
+  const ctx = A.ctx, s = ctx.createBufferSource(), hp = ctx.createBiquadFilter(), a = ctx.createGain();
+  s.buffer = BEAT.hat; s.loop = true; hp.type = 'highpass'; hp.frequency.value = 4500; a.gain.setValueAtTime(g, w); a.gain.exponentialRampToValueAtTime(0.0001, w + 1.8);
+  s.connect(hp); hp.connect(a); a.connect(BEAT.bus); a.connect(A.revSend); s.start(w); s.stop(w + 1.85);
+}
+function showStep(w){
+  const s = SW.step++, bar = s >> 4, inBar = s & 15, q = s & 3, beat = inBar >> 2, sp = 60 / BEAT.bpm / 4, root = A.base / 8;
+  const bi = bar >> 2, blk = SELF[bi % SELF.length], nb = SELF[(bi + 1) % SELF.length], barIn = bar & 3, L = blk.L, kick = blk.kick !== false, pre = !!nb.big;
+  if (inBar === 0){
+    if (barIn === 0) SW.q.push({at:w, ty:'block', B:{...blk, n:bi, cyc:Math.floor(bi / SELF.length)}});
+    if (pre && barIn === 2){ SW.q.push({at:w, ty:'tame'}); SW.q.push({at:w, ty:'riser', sec:sp * 32}); }   // ため: 見せ場の 2 小節前
+  }
+  if (q === 0) SW.q.push({at:w, ty:'beat', bar:inBar === 0});
+  if (pre && barIn === 3){   // 見せ場の直前の 1 小節: 手拍子が細かくなり、後半はキックが消える
+    if (inBar >= 8 || q === 0) bClap(w, 0.05 + inBar / 16 * 0.3);
+    if (q === 0 && beat < 2 && kick) bKick(w, 0.8, 125, 44, 0.3);
+    arpNote(w, s, 0.03 + inBar * 0.003, sp); return;
+  }
+  if (barIn === 0 && inBar === 0 && L >= 2) bCrash(w, L === 3 ? 0.16 : 0.08);
+  if (L === 0){ if (kick && (inBar === 0 || inBar === 8)) bKick(w, 0.55, 90, 40, 0.4); if (s % 8 === 0) arpNote(w, s, 0.035, sp * 7); if (inBar === 0) bBass(w, root, 0.18, sp * 15, 300); return; }
+  if (kick && q === 0) bKick(w, 0.95, 125, 44, 0.36);
+  if (L === 1){ if (q === 2) bHat(w, 0.06, 0.05); if (s % 2 === 0) arpNote(w, s, 0.04, sp * 2.2); if (!kick && inBar === 0) bBass(w, root, 0.2, sp * 15, 400); return; }
+  if (q === 2) bHat(w, L === 3 ? 0.11 : 0.08, L === 3 ? 0.12 : 0.06); else bHat(w, 0.02, 0.025);
+  if (L === 2){ if (q === 2) bBass(w, root * 2, 0.34, sp * 1.6, 900); arpNote(w, s, 0.045, sp * 1.4); return; }
+  if (q !== 0) bBass(w, root * 2, 0.3, sp * 0.85, 1500);
+  if (q === 0 && (beat === 1 || beat === 3)) bClap(w, 0.22);
+  arpNote(w, s, 0.05, sp * 1.1);
+}
+
+/* 🔦 レーザー 16 本（1 回の描画。光の帯はいつもこちらを向く）: 正面の扇・床から立つ柱・交差・天からの放射・天井の網・灯台 */
+const LZN = 16, lzA = new Float32Array(LZN * 3), lzB = new Float32Array(LZN * 3), lzC = new Float32Array(LZN * 3), lzW = new Float32Array(LZN);
+const lzG = new T.InstancedBufferGeometry();
+lzG.setAttribute('position', new T.BufferAttribute(new Float32Array([-1, 0, 0, 1, 0, 0, -1, 1, 0, 1, 1, 0]), 3)); lzG.setIndex([0, 1, 2, 2, 1, 3]);
+lzG.setAttribute('aA', new T.InstancedBufferAttribute(lzA, 3).setUsage(T.DynamicDrawUsage)); lzG.setAttribute('aB', new T.InstancedBufferAttribute(lzB, 3).setUsage(T.DynamicDrawUsage));
+lzG.setAttribute('aC', new T.InstancedBufferAttribute(lzC, 3).setUsage(T.DynamicDrawUsage)); lzG.setAttribute('aW', new T.InstancedBufferAttribute(lzW, 1).setUsage(T.DynamicDrawUsage));
+lzG.instanceCount = LZN;
+const lasers = new T.Mesh(lzG, addMat({side:T.DoubleSide,
+  vertexShader:`attribute vec3 aA, aB, aC; attribute float aW; varying vec3 vC; varying vec2 vU;
+void main(){ vec3 P = mix(aA, aB, position.y), ax = normalize(aB - aA), vw = normalize(cameraPosition - P), sd = normalize(cross(ax, vw)); vU = position.xy; vC = aC;
+  gl_Position = projectionMatrix * viewMatrix * vec4(P + sd * position.x * aW * (1. + position.y * 3.), 1.); }`,
+  fragmentShader:`varying vec3 vC; varying vec2 vU; void main(){ float x = vU.x, core = exp(-x * x * 5.) * .5 + exp(-x * x * 70.) * 1.4, al = smoothstep(0., .015, vU.y) * pow(1. - vU.y, 1.3); gl_FragColor = vec4(vC * core * al, 1.); }`}));
+lasers.frustumCulled = false; lasers.visible = false; scene.add(lasers);
+const _la = new T.Vector3(), _lb = new T.Vector3(), _ld = new T.Vector3();
+const LZ = {mask:new Uint8Array(LZN).fill(1), flash:0, u:0};
+const LZ_PAT = [
+  {name:'正面の扇', fn:(j, u, h, A, B) => { loc(A, 0, 1.2, 30); const yw = (j / 15 - 0.5) * (0.7 + h * 1.1), p = 0.06 + 0.16 * Math.sin(u * 0.7 + j * 0.25), cp = Math.cos(p);
+    _ld.set(-(SW.f.x * Math.cos(yw) + SW.r.x * Math.sin(yw)) * cp, Math.sin(p), -(SW.f.z * Math.cos(yw) + SW.r.z * Math.sin(yw)) * cp); B.copy(A).addScaledVector(_ld, 60); }},
+  {name:'床から立つ柱', fn:(j, u, h, A, B) => { const th = j / 16 * TAU + u * 0.15, R = 9, R2 = R + Math.sin(u * 0.9 + j) * (3 + h * 5), w = th + 0.2 * Math.sin(u * 0.5);
+    loc(A, Math.cos(th) * R, 0, Math.sin(th) * R); loc(B, Math.cos(w) * R2, 34, Math.sin(w) * R2); }},
+  {name:'交差', fn:(j, u, h, A, B) => { const s = j % 2 ? 1 : -1, k = j >> 1; loc(A, s * 18, 1.5 + k * 0.4, 24);
+    loc(_lb, -s * 14 + Math.sin(u * 1.1 + k * 0.8) * 10, 1.5 + Math.sin(u * 0.8 + k * 0.6) * (4 + h * 4), -12); B.copy(_lb).sub(A).normalize().multiplyScalar(80).add(A); }},
+  {name:'天からの放射', fn:(j, u, h, A, B) => { A.set(SW.c.x, 26, SW.c.z); const th = j / 16 * TAU + u * 0.35, cn = 0.45 + 0.25 * Math.sin(u * 0.6) + h * 0.2;
+    B.set(A.x + Math.cos(th) * Math.sin(cn) * 70, A.y - Math.cos(cn) * 70, A.z + Math.sin(th) * Math.sin(cn) * 70); }},
+  {name:'天井の網', fn:(j, u, h, A, B) => { const k = j % 8, o = (k - 3.5) * 5 + ((u * 1.5) % 5), y = 13 + Math.sin(u + k) * 0.5;
+    if (j < 8){ loc(A, -45, y, o); loc(B, 45, y, o); } else { loc(A, o, y, -45); loc(B, o, y, 45); } }},
+  {name:'灯台', fn:(j, u, h, A, B) => { const m = j % 4, L = j >> 2; loc(A, [1, -1, 1, -1][L] * 24, 3.2, [1, 1, -1, -1][L] * 24); const yw = u * 0.9 * (L % 2 ? 1 : -1) + m * Math.PI / 2;
+    B.set(A.x + Math.cos(yw) * 70, A.y + Math.sin(u * 0.4 + m) * 2, A.z + Math.sin(yw) * 70); }},
+];
+function lzTick(dt){
+  SW.lzV = lerp(SW.lzV, SW.on ? SW.lzA : 0, 1 - Math.exp(-dt * 2.5)); const v = SW.lzV + SW.strobe * 0.8;
+  lasers.visible = v > 0.01; if (!lasers.visible) return;
+  LZ.u += dt * (0.6 + SW.bands[2] * 0.8 + SW.L * 0.15); LZ.flash = Math.max(0, LZ.flash - dt * 5);
+  const P = LZ_PAT[SW.lzP], h = SW.bands[2], st = SW.strobe > 0 ? ((t * 14) % 1 < 0.5 ? 1.6 : 0.05) : 1;
+  for (let j = 0; j < LZN; j++){
+    P.fn(j, LZ.u, h, _la, _lb); const j3 = j * 3; lzA[j3] = _la.x; lzA[j3 + 1] = _la.y; lzA[j3 + 2] = _la.z; lzB[j3] = _lb.x; lzB[j3 + 1] = _lb.y; lzB[j3 + 2] = _lb.z;
+    palCol(j / LZN * 0.5 + t * 0.04, _c); const k = v * (LZ.mask[j] || SW.strobe > 0 ? 1 : 0) * (0.55 + LZ.flash * 0.7 + h * 0.4) * st;
+    lzC[j3] = _c.r * k; lzC[j3 + 1] = _c.g * k; lzC[j3 + 2] = _c.b * k; lzW[j] = 0.03 + h * 0.035 + LZ.flash * 0.02;
+  }
+  for (const n of ['aA', 'aB', 'aC', 'aW']) lzG.attributes[n].needsUpdate = true;
+}
+
+/* 💎 結晶 108 個（八面体・二十面体・四面体 × 36。面は暗いガラス、ふちが光る。低い音・中・高い音で、それぞれふくらむ）: 頭上のドーム・包む球・正面の壁・床の庭・二重らせん・衛星の軌道 */
+const CRN = 36, CR = {g:[], pos:[], ang:0, snap:0, u:0};
+const hsh = (n) => fr1(Math.sin(n * 12.9898) * 43758.5453);
+[new T.OctahedronGeometry(0.62), new T.IcosahedronGeometry(0.55), new T.TetrahedronGeometry(0.75)].forEach((geo, k) => {
+  const u = {uA:{value:0}, uB:{value:0}, uK:{value:k}, uT:SKY.uT, uKick:SKY.uKick, ...PU};
+  const m = new T.InstancedMesh(geo, addMat({uniforms:u,
+    vertexShader:`uniform float uK; varying vec3 vN; varying vec3 vV; varying float vS;
+void main(){ vec4 mv = viewMatrix * modelMatrix * instanceMatrix * vec4(position, 1.); vN = normalize(mat3(viewMatrix) * mat3(modelMatrix) * mat3(instanceMatrix) * normal); vV = normalize(-mv.xyz); vS = float(gl_InstanceID) / 36. + uK * .33; gl_Position = projectionMatrix * mv; }`,
+    fragmentShader:`uniform float uA, uB, uT, uKick; varying vec3 vN; varying vec3 vV; varying float vS;
+${PAL_GLSL}
+void main(){ float f = pow(1. - abs(dot(normalize(vN), normalize(vV))), 2.); gl_FragColor = vec4(pal(vS * .7 + uT * .03) * (.06 + f * (1.2 + uB * 1.6) + uKick * .12) * uA, 1.); }`}), CRN);
+  m.instanceMatrix.setUsage(T.DynamicDrawUsage); m.frustumCulled = false; m.visible = false; scene.add(m);
+  CR.g.push({m, u}); CR.pos.push(Array.from({length:CRN}, () => new T.Vector3(0, -99, 0)));
+});
+const CR_PAT = [
+  {name:'頭上のドーム', fn:(k, j, u, o) => { const R = [7, 10, 13][k], th = j / CRN * TAU + u * 0.05 * (k % 2 ? 1 : -1); loc(o, Math.cos(th) * R, [6.5, 9, 11.5][k], Math.sin(th) * R); }},
+  {name:'包む球', fn:(k, j, u, o) => { const n = k * CRN + j, y = 1 - 2 * (n + 0.5) / 108, rr = Math.sqrt(1 - y * y), th = n * 2.39996 + u * 0.03; loc(o, Math.cos(th) * rr * 12, SW.c.y + y * 12, Math.sin(th) * rr * 12); }},
+  {name:'正面の壁', fn:(k, j, u, o) => { const n = k * CRN + j, col = n % 12, row = Math.floor(n / 12); loc(o, (col - 5.5) * 2.3, 0.8 + row * 2.2 + Math.sin(u + col * 0.5) * 0.3, 17 + Math.sin(u * 0.7 + row) * 0.6); }},
+  {name:'床の庭', fn:(k, j, u, o) => { const n = k * CRN + j, r = 5 + hsh(n) * 11, th = hsh(n + 300) * TAU + u * 0.02; loc(o, Math.cos(th) * r, 0.5 + hsh(n + 600) * 1.4 + Math.sin(u * 1.3 + n) * 0.15, Math.sin(th) * r); }},
+  {name:'二重らせん', fn:(k, j, u, o) => { const n = k * CRN + j, s = n / 108, th = s * TAU * 3 + (n % 2) * Math.PI + u * 0.25; loc(o, Math.cos(th) * 7.5, 0.4 + s * 18, Math.sin(th) * 7.5); }},
+  {name:'衛星の軌道', fn:(k, j, u, o) => { const R = [6.5, 9.5, 12.5][k], tl = [0.35, -0.55, 0.95][k], th = j / CRN * TAU + u * 0.3 / (k + 1), x = Math.cos(th) * R, yy = Math.sin(th) * R; loc(o, x, SW.c.y + yy * Math.sin(tl), yy * Math.cos(tl)); }},
+];
+const _cq = new T.Quaternion(), _ce = new T.Euler(), _cm = new T.Matrix4(), _cs = new T.Vector3(), _cp = new T.Vector3();
+function crTick(dt){
+  SW.crV = lerp(SW.crV, SW.on ? SW.crA : 0, 1 - Math.exp(-dt * 1.6));
+  const vis = SW.crV > 0.01; for (const G of CR.g) G.m.visible = vis; if (!vis) return;
+  CR.u += dt; CR.ang = lerp(CR.ang, CR.snap * Math.PI / 4, 1 - Math.exp(-dt * 14));   // 拍ごとに 45° カクッと
+  const P = CR_PAT[SW.crP], kk = 1 - Math.exp(-dt * 1.8);
+  CR.g.forEach((G, k) => {
+    const band = SW.bands[k]; G.u.uA.value = SW.crV; G.u.uB.value = band;
+    for (let j = 0; j < CRN; j++){
+      P.fn(k, j, CR.u, _cp); const p = CR.pos[k][j]; if (p.y < -50) p.copy(_cp); else p.lerp(_cp, kk);
+      const n = k * CRN + j, near = sm(2, 6, p.distanceTo(head));   // 顔の近く（6m より内）では小さく、2m で消える
+      _ce.set(CR.u * (0.2 + hsh(n) * 0.5) + CR.ang, CR.u * 0.3 + n + CR.ang * (k === 1 ? -1 : 1), 0); _cq.setFromEuler(_ce);
+      _cs.setScalar(near * (0.75 + band * 0.9 + SW.pulse * 0.18) * (0.8 + hsh(n + 900) * 0.6)); _cm.compose(p, _cq, _cs); G.m.setMatrixAt(j, _cm);
+    }
+    G.m.instanceMatrix.needsUpdate = true;
+  });
+}
+
+/* 🔷 巨大な枠（網目の球 30m・ひし形 21m。小節ごとに 22.5° カクッと）・☀ 光の太陽（正面の遠く。光条が拍で脈打つ）・🌊 音の年輪の床（低い音の強さが、足もとから外へ流れる）・💫 衝撃の輪 */
+const FRM = [new T.IcosahedronGeometry(30, 1), new T.OctahedronGeometry(21)].map((geo, k) => {
+  const m = new T.LineSegments(new T.EdgesGeometry(geo), new T.LineBasicMaterial({color:0xffffff, transparent:true, blending:T.AdditiveBlending, depthWrite:false}));
+  m.visible = false; m.frustumCulled = false; scene.add(m); return {m, k, rot:0, snap:0};
+});
+function frmTick(dt){
+  SW.frV = lerp(SW.frV, SW.on ? SW.frA : 0, 1 - Math.exp(-dt * 1.2));
+  for (const F of FRM){
+    F.m.visible = SW.frV > 0.01; if (!F.m.visible) continue;
+    F.rot = lerp(F.rot, F.snap * Math.PI / 8, 1 - Math.exp(-dt * 6)); F.m.position.copy(SW.c); const s = F.k ? -1 : 1;
+    F.m.rotation.set(t * 0.03 * s, t * 0.05 + F.rot * s, F.rot * 0.5);
+    palCol(t * 0.03 + F.k * 0.5, F.m.material.color); F.m.material.color.multiplyScalar(SW.frV * (0.35 + SW.pulse * 0.35 + SW.bands[0] * 0.3));
+  }
+}
+const sunU = {uA:{value:0}, uT:SKY.uT, uKick:SKY.uKick, ...PU};
+const sunM = new T.Mesh(new T.PlaneGeometry(1, 1), addMat({side:T.DoubleSide, uniforms:sunU,
+  vertexShader:`varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+  fragmentShader:`uniform float uA, uT, uKick; varying vec2 vU;
+${PAL_GLSL}
+void main(){ vec2 p = (vU - .5) * 2.; float r = length(p), a = atan(p.y, p.x);
+  float core = exp(-r * r * 60.) * 2. + exp(-r * 9.) * .6;
+  float rays = pow(.5 + .5 * cos(a * 18. + uT * .3), 6.) * exp(-r * 2.6) * (.6 + uKick * .8) + pow(.5 + .5 * cos(a * 7. - uT * .2), 10.) * exp(-r * 1.8) * .5;
+  gl_FragColor = vec4(mix(vec3(1.), pal(uT * .02 + r), .5) * (core + rays) * uA * smoothstep(1., .7, r), 1.); }`}));
+sunM.visible = false; sunM.frustumCulled = false; scene.add(sunM);
+function sunTick(dt){ SW.sunV = lerp(SW.sunV, SW.on ? SW.sunA : 0, 1 - Math.exp(-dt * 1.5)); sunM.visible = SW.sunV > 0.01; if (!sunM.visible) return; loc(sunM.position, 0, 7, 62); sunM.lookAt(head); sunM.scale.setScalar(46 * (1 + SW.pulse * 0.06)); sunU.uA.value = SW.sunV; }
+const TRH = new Uint8Array(256 * 4), trTex = new T.DataTexture(TRH, 256, 1, T.RGBAFormat); trTex.magFilter = trTex.minFilter = T.LinearFilter; trTex.needsUpdate = true;
+const TRU = {uH:{value:trTex}, uA:{value:0}, uM:{value:0}, uT:SKY.uT, ...PU};
+const terrain = new T.Mesh(new T.CircleGeometry(45, 160), addMat({uniforms:TRU,
+  vertexShader:`varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+  fragmentShader:`uniform sampler2D uH; uniform float uA, uT, uM; varying vec2 vP;
+${PAL_GLSL}
+void main(){ float r = length(vP), a = atan(vP.y, vP.x), x = r / 45., h = texture2D(uH, vec2(x, .5)).r;
+  float pat = uM < .5 ? pow(.5 + .5 * cos(r * 7.54 - uT * 2.), 8.)
+    : uM < 1.5 ? pow(.5 + .5 * cos(a * 24.), 30.) * .9 + pow(.5 + .5 * cos(r * 3.14 - uT * 3.), 12.) * .4
+    : max(pow(.5 + .5 * cos(a * 32.), 40.), pow(.5 + .5 * cos(r * 6.28), 40.));   // 輪 ／ 光の道 ／ 網
+  float m = pat * (.12 + h * 1.6) * smoothstep(3., 6., r) * smoothstep(45., 30., r);
+  gl_FragColor = vec4(pal(x * 1.4 + uT * .02 + h * .3) * m * uA, 1.); }`}));
+terrain.rotation.x = -Math.PI / 2; terrain.position.y = 0.003; terrain.visible = false; terrain.frustumCulled = false; scene.add(terrain);
+let trAcc = 0;
+function trTick(dt){
+  SW.trV = lerp(SW.trV, SW.on ? SW.trA : 0, 1 - Math.exp(-dt * 1.5)); terrain.visible = SW.trV > 0.01; if (!terrain.visible) return;
+  terrain.position.x = SW.c.x; terrain.position.z = SW.c.z; TRU.uA.value = SW.trV; TRU.uM.value = SW.trM;
+  trAcc += dt * 40; let n = Math.floor(trAcc); trAcc -= n; n = Math.min(n, 8);   // 1 秒に 40 回、まん中に今の強さを入れて、外へ送る
+  if (n){ TRH.copyWithin(n * 4, 0, (256 - n) * 4); const v = clamp((SW.bands[0] * 0.6 + SW.bands[1] * 0.4) * 0.8 + SW.pulse * 0.4, 0, 1) * 255; for (let k = 0; k < n; k++) TRH[k * 4] = v; trTex.needsUpdate = true; }
+}
+const shockU = {uA:{value:0}, uC:{value:new T.Color()}};
+const shock = new T.Mesh(new T.RingGeometry(0.94, 1, 128, 1), addMat({side:T.DoubleSide, uniforms:shockU, vertexShader:`void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+  fragmentShader:`uniform float uA; uniform vec3 uC; void main(){ gl_FragColor = vec4(uC * uA, 1.); }`}));
+shock.rotation.x = -Math.PI / 2; shock.visible = false; shock.frustumCulled = false; scene.add(shock);
+let shockAt = -99;
+function shockTick(){ const a = t - shockAt; shock.visible = a < 1.8; if (!shock.visible) return; shock.position.set(SW.c.x, 1.1, SW.c.z); shock.scale.setScalar(1 + a * 26); palCol(t * 0.05, shockU.uC.value); shockU.uA.value = Math.pow(1 - a / 1.8, 2) * 1.6; }
+
+/* 🎆 花火と 🎊 紙吹雪（粒 24,000 を 1 回で描く。動きはシェーダーの中 = 生まれた瞬間の値だけ書く）。花火は拍で打ち上がり、2 拍あとの拍で開く */
+const FWN = 24000, fwP = new Float32Array(FWN * 3), fwV = new Float32Array(FWN * 3), fwC = new Float32Array(FWN * 3), fwT = new Float32Array(FWN * 4);
+for (let i = 0; i < FWN; i++) fwT[i * 4] = -999;
+const fwGeo = new T.BufferGeometry();
+fwGeo.setAttribute('position', new T.BufferAttribute(fwP, 3).setUsage(T.DynamicDrawUsage)); fwGeo.setAttribute('aV', new T.BufferAttribute(fwV, 3).setUsage(T.DynamicDrawUsage));
+fwGeo.setAttribute('aC', new T.BufferAttribute(fwC, 3).setUsage(T.DynamicDrawUsage)); fwGeo.setAttribute('aT', new T.BufferAttribute(fwT, 4).setUsage(T.DynamicDrawUsage));
+// aT = (生まれた時刻, 寿命, 種類 0 火花・1 紙吹雪・2 柳・3 打ち上げの尾, 種)。動き = 空気抵抗 k と重さ g（落ちる速さは g/k で止まる）
+const fireworks = new T.Points(fwGeo, addMat({uniforms:{uT:SKY.uT, uPix:DU.uPix},
+  vertexShader:`attribute vec3 aV, aC; attribute vec4 aT; uniform float uT, uPix; varying vec3 vC;
+void main(){
+  float age = uT - aT.x, l = age / aT.y;
+  if (age < 0. || l > 1.){ gl_Position = vec4(0., 0., -2., 1.); gl_PointSize = 0.; vC = vec3(0.); return; }
+  float kd = aT.z, k = kd < .5 ? 1.2 : kd < 1.5 ? 2.6 : kd < 2.5 ? .6 : 3., g = kd < .5 ? 3.2 : kd < 1.5 ? 2.4 : kd < 2.5 ? 4.5 : 1., e = 1. - exp(-k * age);
+  vec3 p = position + aV * e / k - vec3(0., g, 0.) * (age - e / k) / k;
+  bool cf = kd > .5 && kd < 1.5; float br = 1., sz = kd > 2.5 ? .05 : .12;
+  if (cf){ p.x += sin(age * 2.3 + aT.w * 40.) * .35; p.z += cos(age * 1.9 + aT.w * 30.) * .35; br = .3 + .7 * abs(sin(age * (6. + aT.w * 8.) + aT.w * 20.)); sz = .07; }   // 紙吹雪: ひらひら・きらきら
+  vec4 mv = modelViewMatrix * vec4(p, 1.); gl_Position = projectionMatrix * mv;
+  float fade = cf ? smoothstep(1., .75, l) : pow(1. - l, 1.4);
+  vC = (cf ? aC : mix(vec3(1., .95, .85), aC, smoothstep(0., .22, l))) * br * fade * (kd > 2.5 ? .7 : 1.);
+  if (!cf && kd < 2.5) vC *= .75 + .25 * sin(uT * 30. + aT.w * 99.);   // ちらちら
+  gl_PointSize = clamp(sz * (1. - l * .4) * uPix / -mv.z, 1., 40.);
+}`, fragmentShader:DOT_FRAG}));
+fireworks.frustumCulled = false; scene.add(fireworks);
+const FW = {head:0, lo:FWN, hi:-1, rockets:[]}, FW_TYPES = ['sphere', 'double', 'ring', 'willow', 'crackle'], _fc = new T.Color(), _fc2 = new T.Color(), _fp = new T.Vector3(), _fq = new T.Vector3(), _fe1 = new T.Vector3(), _fe2 = new T.Vector3();
+function fwPut(p, vx, vy, vz, c, life, kind, delay){
+  const i = FW.head; FW.head = (FW.head + 1) % FWN; const i3 = i * 3, i4 = i * 4;
+  fwP[i3] = p.x; fwP[i3 + 1] = p.y; fwP[i3 + 2] = p.z; fwV[i3] = vx; fwV[i3 + 1] = vy; fwV[i3 + 2] = vz; fwC[i3] = c.r; fwC[i3 + 1] = c.g; fwC[i3 + 2] = c.b;
+  fwT[i4] = t + (delay || 0); fwT[i4 + 1] = life; fwT[i4 + 2] = kind; fwT[i4 + 3] = Math.random();
+  if (i < FW.lo) FW.lo = i; if (i > FW.hi) FW.hi = i;
+}
+function fwFlush(){   // 書いた所だけ送る
+  if (FW.hi < 0) return;
+  for (const [nm, sz] of [['position', 3], ['aV', 3], ['aC', 3], ['aT', 4]]){ const at = fwGeo.attributes[nm]; at.clearUpdateRanges(); at.addUpdateRange(FW.lo * sz, (FW.hi - FW.lo + 1) * sz); at.needsUpdate = true; }
+  FW.lo = FWN; FW.hi = -1;
+}
+function fwBurst(p, type, ci){
+  SW.fws++; palCol(ci, _fc); palCol(ci + 0.45, _fc2);
+  const S = type === 'willow' ? 260 : type === 'ring' ? 300 : 380;
+  if (type === 'ring'){ _fe1.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(); _fe2.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).cross(_fe1).normalize(); }
+  for (let k = 0; k < S; k++){
+    const yy = Math.random() * 2 - 1, th = Math.random() * TAU, rr = Math.sqrt(1 - yy * yy); let x = Math.cos(th) * rr, y = yy, z = Math.sin(th) * rr, sp = 7.5 + Math.random() * 1.2, life = 1.7 + Math.random() * 0.6, kind = 0, col = _fc;
+    if (type === 'ring'){ const a = k / S * TAU; x = _fe1.x * Math.cos(a) + _fe2.x * Math.sin(a); y = _fe1.y * Math.cos(a) + _fe2.y * Math.sin(a); z = _fe1.z * Math.cos(a) + _fe2.z * Math.sin(a); sp = 9; }
+    else if (type === 'double'){ if (k < S / 2){ sp = 4; } else { sp = 9; col = _fc2; } }
+    else if (type === 'willow'){ sp = 5 + Math.random(); life = 3.2 + Math.random() * 0.8; kind = 2; col = _c.setRGB(1, 0.72, 0.32).lerp(_fc, 0.25); }
+    else if (type === 'crackle'){ life = 1 + Math.random() * 0.3; if (k % 3 === 0){ _fq.set(p.x + x * sp * 0.55, p.y + y * sp * 0.55 - 0.93, p.z + z * sp * 0.55); fwPut(_fq, (Math.random() - 0.5) * 0.8, (Math.random() - 0.5) * 0.8, (Math.random() - 0.5) * 0.8, WHITE, 0.35, 0, 0.9 + Math.random() * 0.2); } }
+    fwPut(p, x * sp, y * sp, z * sp, col, life, kind);
+  }
+  FLOOR.uE.value = Math.max(FLOOR.uE.value, 0.25);
+}
+function fwLaunch(type, delay){   // 正面のまわり（山では、うしろにも）の地面から打ち上げる
+  const R = {t0:t + (delay || 0), dur:clamp(SW.period * 2, 0.7, 1.4), type:type || FW_TYPES[Math.floor(Math.random() * FW_TYPES.length)], ci:Math.random(), A:new T.Vector3(), B:new T.Vector3()};
+  const yw = (Math.random() - 0.5) * (SW.L >= 3 ? 3.6 : 2.2), d = 17 + Math.random() * 9;
+  loc(R.B, Math.sin(yw) * d, 8 + Math.random() * 9, Math.cos(yw) * d); loc(R.A, Math.sin(yw) * d * 0.9 + (Math.random() - 0.5) * 3, 0, Math.cos(yw) * d * 0.9);
+  FW.rockets.push(R);
+}
+function fwTick(){
+  for (let k = FW.rockets.length - 1; k >= 0; k--){
+    const R = FW.rockets[k], a = (t - R.t0) / R.dur; if (a < 0) continue;
+    if (a >= 1){ fwBurst(R.B, R.type, R.ci); FW.rockets.splice(k, 1); continue; }
+    _fp.lerpVectors(R.A, R.B, 1 - Math.pow(1 - a, 2)); _fp.x += Math.sin(a * 9 + R.ci * 20) * 0.15 * (1 - a); palCol(R.ci, _fc);
+    for (let m = 0; m < 3; m++) fwPut(_fp, (Math.random() - 0.5) * 0.6, -1 - Math.random(), (Math.random() - 0.5) * 0.6, _fc, 0.45 + Math.random() * 0.3, 3);
+  }
+  fwFlush();
+}
+function confetti(N){   // まわりの 6 か所の床から、紙吹雪を噴き上げる（頭の上に降ってくる）
+  SW.confs++; N = N || 6;
+  for (let cI = 0; cI < N; cI++){
+    const th = cI / N * TAU + Math.random() * 0.3, ix = -(SW.r.x * Math.cos(th) + SW.f.x * Math.sin(th)), iz = -(SW.r.z * Math.cos(th) + SW.f.z * Math.sin(th)); loc(_fp, Math.cos(th) * 2.8, 0.15, Math.sin(th) * 2.8);
+    for (let k = 0; k < 230; k++){
+      palCol(Math.random(), _fc); if (Math.random() < 0.15) _fc.setRGB(1, 1, 1);
+      const s1 = 0.8 + Math.random() * 2.2; fwPut(_fp, ix * s1 + (Math.random() - 0.5) * 2.4, 9 + Math.random() * 5, iz * s1 + (Math.random() - 0.5) * 2.4, _fc, 6 + Math.random() * 3, 1);
+    }
+  }
+}
+
+/* 🔤 文字（光る虹色の文字）: 正面の 1 行 ／ まわりを回る電光掲示 ／ 1 文字ずつ大きく（拍ごと） */
+const TX = {mode:-1, until:0, chars:[], ci:0, cAt:-9};
+function mkTxt(w, h, cw, ch){ const c = document.createElement('canvas'); c.width = cw; c.height = ch; const tx = new T.CanvasTexture(c); tx.colorSpace = T.SRGBColorSpace;
+  const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({map:tx, transparent:true, opacity:0, depthWrite:false, blending:T.AdditiveBlending, toneMapped:false, side:T.DoubleSide})); m.visible = false; m.frustumCulled = false; scene.add(m); return {m, c, tx}; }
+const TXF = mkTxt(13, 3.25, 2048, 512), TXC = mkTxt(4, 4, 512, 512);
+const txRingC = document.createElement('canvas'); txRingC.width = 4096; txRingC.height = 256;
+const txRingT = new T.CanvasTexture(txRingC); txRingT.colorSpace = T.SRGBColorSpace; txRingT.wrapS = T.RepeatWrapping; txRingT.repeat.x = -2;   // 内側から読むので、左右を返す
+const TXR = new T.Mesh(new T.CylinderGeometry(7, 7, 1.3, 128, 1, true), new T.MeshBasicMaterial({map:txRingT, transparent:true, opacity:0, depthWrite:false, blending:T.AdditiveBlending, toneMapped:false, side:T.BackSide}));
+TXR.visible = false; TXR.frustumCulled = false; scene.add(TXR);
+function txFont(x, word, W, H, k){ let fs = Math.floor(H * k); x.font = '900 ' + fs + 'px "Noto Sans JP", sans-serif'; const w = x.measureText(word).width; if (w > W * 0.94){ fs = Math.floor(fs * W * 0.94 / w); x.font = '900 ' + fs + 'px "Noto Sans JP", sans-serif'; } return fs; }
+function txDraw(c, word, k){
+  const x = c.getContext('2d'), W = c.width, H = c.height; x.clearRect(0, 0, W, H); const fs = txFont(x, word, W, H, k || 0.62);
+  const g = x.createLinearGradient(0, 0, W, 0); for (let i = 0; i <= 4; i++){ palCol(i / 4 + t * 0.02, _c); g.addColorStop(i / 4, '#' + _c.getHexString()); }
+  x.textAlign = 'center'; x.textBaseline = 'middle'; palCol(t * 0.02 + 0.3, _c); x.shadowColor = '#' + _c.getHexString(); x.shadowBlur = H * 0.09; x.fillStyle = g; x.fillText(word, W / 2, H * 0.54);
+  x.shadowBlur = 0; x.lineWidth = Math.max(2, fs * 0.025); x.strokeStyle = 'rgba(255,255,255,.85)'; x.strokeText(word, W / 2, H * 0.54);
+}
+function textShow(word, mode){
+  const bar = SW.period * 4; TX.mode = mode;
+  if (mode === 0){ txDraw(TXF.c, word); TXF.tx.needsUpdate = true; TX.until = t + bar * 3; loc(TXF.m.position, 0, SW.c.y + 1.6, 13); TXF.m.lookAt(SW.c.x, TXF.m.position.y, SW.c.z); }
+  else if (mode === 1){ const s = (word + '　・　').repeat(3); txDraw(txRingC, s, 0.7); txRingT.needsUpdate = true; TX.until = t + bar * 6; TXR.position.set(SW.c.x, SW.c.y + 1.1, SW.c.z); }
+  else { TX.chars = [...String(word).replace(/\s+/g, '')]; TX.ci = 0; TX.until = t + bar * 8; txChar(); }
+}
+function txChar(){
+  if (TX.ci >= TX.chars.length){ TX.until = Math.min(TX.until, t + 0.6); return; }
+  txDraw(TXC.c, TX.chars[TX.ci++], 0.8); TXC.tx.needsUpdate = true; loc(TXC.m.position, 0, SW.c.y + 0.8, 8); TXC.m.lookAt(SW.c.x, TXC.m.position.y, SW.c.z); TX.cAt = t;
+}
+function txTick(dt){
+  const on = (SW.on || SW.strobe > 0) && t < TX.until, k = 1 - Math.exp(-dt * 4);
+  const fa = (m, want) => { m.material.opacity = lerp(m.material.opacity, want, k); m.visible = m.material.opacity > 0.01; };
+  fa(TXF.m, on && TX.mode === 0 ? 0.95 : 0); fa(TXR, on && TX.mode === 1 ? 0.9 : 0); fa(TXC.m, on && TX.mode === 2 ? Math.max(0, 1 - (t - TX.cAt) * 0.8) : 0);
+  if (TXF.m.visible) TXF.m.scale.setScalar(1 + SW.pulse * 0.04);
+  if (TXR.visible) txRingT.offset.x += dt * 0.025;
+  if (TXC.m.visible) TXC.m.scale.setScalar(1 + (t - TX.cAt) * 0.25);
+}
+
+/* 🎬 演出の係: 場面（着せかえ）・拍・小節・ため・見せ場 */
+function bandsTick(dt){   // いま鳴っている音（曲・自分の音・鐘ぜんぶ）を、低い・中・高いに分けて 0〜1 に（いちばん大きかった所を基準に、ゆっくり下げる）
+  if (!SW.an){ SW.bands[0] = SW.bands[1] = SW.bands[2] = 0; return; }
+  const d = SW.fd; SW.an.getByteFrequencyData(d); const bin = A.ctx.sampleRate / 2 / d.length;
+  [[30, 150], [150, 2000], [2000, 10000]].forEach(([lo, hi], k) => {
+    const a = Math.max(1, Math.round(lo / bin)), b = Math.min(d.length - 1, Math.round(hi / bin)); let s = 0; for (let i = a; i <= b; i++) s += d[i];
+    const v = s / ((b - a + 1) * 255); SW.peak[k] = Math.max(SW.peak[k] * Math.exp(-dt * 0.15), v, 0.02); const n = clamp(v / SW.peak[k], 0, 1); SW.bands[k] = lerp(SW.bands[k], n * n, 1 - Math.exp(-dt * 12));
+  });
+}
+const WSET = [[0, 3, 7, 8], [0, 2, 5, 9], [1, 2, 0, 6, 11, 12], [1, 2, 5, 10, 12]];   // v6: フラクタルも（ふつう = マンデルバルブ ／ 高まり = 球の洞窟・無限の回廊 ／ 山 = マンデルボックス・無限の回廊）   // v5: GLSL の世界も（静か = 雲海の上・月の地平 ／ ふつう・山 = 花の深淵 ／ 高まり = 氷晶の峡谷）   // 盛り上がりごとの世界（静か = 液体の曼荼羅・粒だけ ／ … ／ 山 = 虚数のトンネル・位相の花）
+function dress(L, big){
+  const ws = WSET[L]; let w = ws[Math.floor(Math.random() * ws.length)]; if (w === WD.i && ws.length > 1 && Math.random() < 0.6) w = ws[(ws.indexOf(w) + 1) % ws.length];
+  if (WORLDS[w].gl != null){ if (w === WD.i) glVarSet(-2); else GL.pendVar = Math.random() < 0.25 ? -1 : -2; }   // v7: GLSL の世界は、バリエーションもランダムに（同じ世界が続くときは、バリエーションだけ変える）
+  worldSet(w, true, big ? 6 : 0.7); WD.byWorld = false;
+  const ks = L === 0 ? [0, 6, 8] : [6, 8, 10, 12, 16]; kalSet(ks[Math.floor(Math.random() * ks.length)]);
+  SW.lzP = Math.floor(Math.random() * LZ_PAT.length); SW.lzA = [0, 0.35, 0.75, 1][L];
+  if (big || Math.random() < 0.6) SW.crP = Math.floor(Math.random() * CR_PAT.length); SW.crA = [0.15, 0.5, 0.8, 1][L];
+  SW.trM = Math.floor(Math.random() * 3); SW.trA = [0.35, 0.55, 0.8, 1][L]; SW.frA = [0.12, 0.3, 0.6, 1][L];
+  SW.sunA = L >= 2 && Math.random() < 0.7 ? (L === 3 ? 1 : 0.6) : 0; SW.fwRate = [0, 0.25, 1, 2][L];   // 花火 = 1 小節あたり
+  if (L >= 2) ZM.boost = 1;
+  tunSet(L === 3 && Math.random() < 0.5, true); juliaSet(L === 3 && Math.random() < 0.35, true);
+  if (big || SW.blocks % 2 === 0) setPal(palIdx + 1);
+  if (L >= 1 && (big || Math.random() < 0.45)) textShow(showWord(), big ? 0 : Math.floor(Math.random() * 3));
+}
+function onBlock(B){   // 場面がわり（4 小節ごと ／ 曲のときは演出プランの切れ目）
+  SW.blocks++; SW.L = clamp(B.L | 0, 0, 3); SW.tame = false; SW.dim = [0.8, 0.62, 0.55, 0.6][SW.L]; showFrame();
+  if (B.cyc && B.n % SELF.length === 0) setBase(A.base === 432 ? 528 : 432);   // 台本を 1 周したら、基音を変えて 2 周め
+  dress(SW.L, !!B.big);
+  const m = B.shape > 0 && B.shape !== TEXT_ID ? B.shape : pickShape(SW.L);
+  if (B.open){ shapeSet(TEXT_ID, true, showWord()); SW.pend = m; SW.pendBar = SW.bars + 3; } else { shapeSet(m, true); SW.pend = -1; }
+  if (B.big) showBig();
+  SW.sceneName = '場面 ' + SW.blocks + '・' + SHAPES[m].name + (B.big ? ' ★' : ''); hudPC(); menuDirty();
+}
+function onBeat(isBar){
+  SW.beats++; SW.pulse = 1;
+  if (SW.song){ kickV = 1; FLOOR.uE.value = Math.max(FLOOR.uE.value, 0.3); for (const h of hands) h.pulse = Math.max(h.pulse, 0.3); }   // 曲のときは、拍 = 脈（自分の音のときは、キックの音で脈打つ）
+  if (SW.L >= 1) CR.snap++;
+  LZ.flash = 1; const p = [0.3, 0.55, 0.7, 0.85][SW.L]; let n = 0; for (let j = 0; j < LZN; j++){ LZ.mask[j] = Math.random() < p ? 1 : 0; n += LZ.mask[j]; } if (n < 4) for (let j = 0; j < LZN; j += 4) LZ.mask[j] = 1;
+  SW.fwAcc += SW.tame ? 0 : SW.fwRate / 4; while (SW.fwAcc >= 1){ SW.fwAcc -= 1; fwLaunch(); }
+  if (TX.mode === 2 && t < TX.until) txChar();
+  if (isBar){ SW.bars++; for (const F of FRM) F.snap++; if (SW.pend >= 0 && SW.bars >= SW.pendBar){ shapeSet(SW.pend, true); SW.pend = -1; } }
+}
+function onTame(){   // ため（見せ場の 2 小節前）: 星くずが文字に集まり、レーザーと太陽が引き、空が少し暗くなる
+  SW.tames++; SW.tame = true; SW.dim = 0.22; SW.lzA = 0.08; SW.sunA = 0; SW.crA = Math.min(SW.crA, 0.3); SW.fwAcc = 0;
+  shapeSet(TEXT_ID, true, showWord()); SW.sceneName = 'ため…「' + SH.word + '」'; hudPC();
+}
+function dustBlast(K){ headPose(); for (let i = 0; i < DN; i++){ const i3 = i * 3, ex = dPos[i3] - head.x, ey = dPos[i3 + 1] - head.y, ez = dPos[i3 + 2] - head.z, d = Math.hypot(ex, ey, ez) + 0.01, k = K / (1 + d * 0.15); dVel[i3] += ex / d * k; dVel[i3 + 1] += ey / d * k; dVel[i3 + 2] += ez / d * k; dEn[i] = Math.min(1, dEn[i] + 0.8); } }
+function showBig(manual){   // 見せ場 ★: はじける・紙吹雪・花火 6 発・ストロボ・衝撃の輪
+  if (!SW.on) showFrame();
+  SW.bigs++; SW.tame = false; SW.dim = 0.6; SW.strobe = 1; SW.pulse = 1;
+  dustBlast(8); burst = 1; FLOOR.uE.value = 1; ZM.boost = 1; shockAt = t;
+  headPose(); _v.copy(head).addScaledVector(headFwd, 6); palCol(Math.random(), _c); addRipple(_v, _c, 1.8);
+  confetti(6); for (let k = 0; k < 6; k++) fwLaunch(null, k * SW.period * 0.5);
+  if (!SW.song) gong();
+  for (const h of hands) if (h.on) buzz(h, 1, 160);
+  if (manual){ if (SW.on){ SW.lzA = Math.max(SW.lzA, 0.8); SW.crA = Math.max(SW.crA, 0.8); } toast('⚡ 見せ場！'); }
+}
+function showEvent(e){ if (e.ty === 'block') onBlock(e.B); else if (e.ty === 'beat') onBeat(e.bar); else if (e.ty === 'tame') onTame(); else if (e.ty === 'riser') riser(e.sec); }
+function showSet(on, quiet){
+  on = !!on; if (on === SW.on) return;
+  SW.on = on;
+  if (on){
+    audioInit(); const ctx = A.ctx;
+    if (ctx && !SW.an){ SW.an = ctx.createAnalyser(); SW.an.fftSize = 1024; SW.an.smoothingTimeConstant = 0.6; A.master.connect(SW.an); SW.fd = new Uint8Array(SW.an.frequencyBinCount); }
+    if (JR.on){ JR.on = false; JR.dim = 1; jrReset(); }   // 旅とショーは、どちらか 1 つ
+    breathSet(false, true); SW.q.length = 0; SW.step = 0; SW.blocks = 0; SW.pend = -1; SW.tame = false; SW.dim = 1; SW.fwAcc = 0; showFrame();
+    if (!SW.song) beatSet(BEAT.bpm >= 120 ? BEAT.idx : 3, true);   // 自分の音: トランス 128 で始める（鼓動の時計で、台本を鳴らす）
+    if (!quiet) toast(SW.song ? '🎆 ショー: 入' : '🎆 ショー: 入（自分の音で。🎵 曲でもできます）');
+  } else {
+    if (SW.song) songStop(true);
+    beatSet(0, true); SW.q.length = 0; SW.lzA = SW.crA = SW.trA = SW.frA = SW.sunA = 0; SW.fwRate = 0; SW.tame = false; SW.dim = 1; SW.pend = -1; SW.L = 0; TX.until = 0; SW.sceneName = '';
+    shapeSet(0, true); tunSet(false, true); juliaSet(false, true); worldSet(0, true, 0.5); kalSet(8);
+    if (!quiet) toast('🎆 ショー: 切');
+  }
+  menuDirty(); hudPC();
+}
+function showTick(dt){
+  bandsTick(dt);
+  SW.pulse = Math.max(0, SW.pulse - dt * 3.5); SW.strobe = Math.max(0, SW.strobe - dt / Math.max(0.5, SW.period * 4));
+  SW.dimV = lerp(SW.dimV, SW.on ? SW.dim : 1, 1 - Math.exp(-dt * 2));
+  if (SW.on && A.ctx){
+    const now = A.ctx.currentTime;
+    if (SW.song) songTick(now); else if (BEAT.bpm) SW.period = 60 / BEAT.bpm;
+    while (SW.q.length && SW.q[0].at <= now + 0.005) showEvent(SW.q.shift());
+  }
+  SW.boost = SW.on ? 1 + SW.L * 0.06 + SW.pulse * 0.15 : 1; DU.uFar.value = (SW.on && SH.mode ? 1.6 : 1) * (SH.mode === TEXT_ID ? 1.5 : 1); SH.pulse = SW.on ? 1 + SW.pulse * 0.06 : 1;
+  lzTick(dt); crTick(dt); frmTick(dt); sunTick(dt); trTick(dt); shockTick(); fwTick(); txTick(dt);
+}
+
+/* 🎵 曲で演出: 曲のフォルダ（NET DIVE と同じ 2 つ ＋ このアプリの music）から選ぶ ／ PC は U キー・ドラッグでも。曲をまるごと下調べ → 拍・小節・演出プラン → 幕があく */
+const MUSIC_DIRS = ['I:/filesystem/new_create/2026-10-11_trance_bloom/music', 'I:/filesystem/new_create/2026-09-28_desktop_vrm/music', 'I:/filesystem/ai_vj_three_theme_app'];
+const AUD_EXT = ['mp3', 'wav', 'flac', 'ogg', 'm4a'];
+const songURL = (p) => (window.DIVE_TOKEN ? '/f?t=' + encodeURIComponent(window.DIVE_TOKEN) + '&p=' + encodeURIComponent(p) : '/music/file?p=' + encodeURIComponent(p));
+async function songScan(){   // NET DIVE の係から開いたとき = NET DIVE の「中身を読む」で ／ 単独のとき = 係（serve.py）の /music/list で
+  let all = [];
+  try {
+    if (window.DIVE_TOKEN){ for (const d of MUSIC_DIRS){ const r = await diveCall('list', d); if (r?.ok) all.push(...r.list.filter((x) => !x.dir && AUD_EXT.includes(x.ext)).map((x) => ({name:x.name, path:x.path}))); } }
+    else all = SW.picked.map((f) => ({name:f.name, path:'file:' + f.name + ':' + f.size, file:f}));   // Web 版: この画面で選んだ曲
+  } catch (_) {}
+  SW.songs = all; return all;
+}
+const songGrids = new Map(); let songSeq = 0;
+async function songPlay(it, file){
+  audioInit(); const ctx = A.ctx; if (!ctx || (!it && !file)) return;
+  const my = ++songSeq, key = file ? 'file:' + file.name + ':' + file.size : it.path, title = String(file ? file.name : it.name).replace(/\.\w+$/, '');
+  if (SW.song) songStop(true);
+  SW.loading = true; menuDirty(); toast('🎼 「' + title + '」を読んで、演出を組み立てています…');
+  let buf = null;
+  try { const ab = file ? await file.arrayBuffer() : await (await fetch(songURL(it.path))).arrayBuffer(); buf = await ctx.decodeAudioData(ab); }
+  catch (e){ if (my === songSeq){ SW.loading = false; menuDirty(); toast('🎵 この曲は読めませんでした: ' + title); } return; }
+  if (my !== songSeq) return;   // 読んでいる間に、ほかの曲が選ばれた
+  let g = songGrids.get(key);
+  if (!g){ try { g = await songAnalyze(buf); } catch (e){ console.warn('analyze', e); g = null; } if (my !== songSeq) return; if (g) songGrids.set(key, g); }
+  if (!g) g = songFake(buf.duration);   // 下調べできなかった曲は、120 BPM の決まった台本で
+  const src = ctx.createBufferSource(), gn = ctx.createGain(); src.buffer = buf; src.loop = true; gn.gain.value = 0.9; src.connect(gn); gn.connect(A.master);
+  SW.loading = false; SW.title = title; SW.t0 = ctx.currentTime + 0.15; src.start(SW.t0);
+  SW.song = {src, gn, g, dur:buf.duration, bi:0, ci:0, last:-1, key}; SW.period = g.period; A.droneMul = 0.15;
+  if (!SW.on) showSet(true, true); else { beatSet(0, true); SW.q.length = 0; }
+  toast('🎬 ' + title + ' ／ ' + Math.round(g.bpm) + ' BPM・' + g.scenes + ' 場面・見せ場 ' + g.bigs + ' 回'); menuDirty(); hudPC();
+}
+function songStop(quiet){
+  const S = SW.song; if (!S) return;
+  try { S.src.stop(); } catch (_) {} try { S.src.disconnect(); S.gn.disconnect(); } catch (_) {}
+  SW.song = null; SW.title = ''; A.droneMul = 1;
+  if (!quiet){ showSet(false, true); toast('⏹ 曲を止めました'); } menuDirty(); hudPC();
+}
+function songTick(now){   // 曲の時刻が、拍・場面の時刻を過ぎた瞬間に（コマ数が落ちても、ずれない）
+  const S = SW.song, g = S.g; let pos = now - SW.t0; if (pos < 0) return; pos %= S.dur;
+  if (pos < S.last){ S.bi = 0; S.ci = 0; }   // くり返しで、曲の頭へ戻った
+  while (S.bi < g.beats.length && g.beats[S.bi] <= pos){ const i = S.bi++; onBeat(((i - g.bar0) % 4 + 4) % 4 === 0); }
+  while (S.ci < g.plan.length && g.plan[S.ci].t <= pos){ const c = g.plan[S.ci++]; if (c.mode === TEXT_ID) onTame(); else onBlock({L:[0.3, 0.55, 0.8, 1].indexOf(c.lv), shape:c.mode, big:c.big}); }
+  S.last = pos;
+}
+function songFake(dur){
+  const beats = [], plan = []; for (let x = 0.2; x < dur; x += 0.5) beats.push(x);
+  for (let b = 0; b * 8 + 0.2 < dur; b++){ const B = SELF[b % SELF.length], t0 = b * 8 + 0.2; plan.push({t:t0, mode:pickShape(B.L), lv:[0.3, 0.55, 0.8, 1][B.L], big:!!B.big}); if (SELF[(b + 1) % SELF.length].big) plan.push({t:t0 + 4, mode:TEXT_ID, lv:0.55, big:false}); }
+  return {beats:Float32Array.from(beats), bar0:0, plan, bpm:120, period:0.5, scenes:plan.length, bigs:plan.filter((c) => c.big).length};
+}
+
+// 曲の下調べ（NET DIVE の musicAnalyze と同じやり方。形の一覧だけ TRANCE BLOOM の星くずの形にした）
+// ① 10ms ごとの「音が急に強くなった度合い」（低・中・高）② 曲の速さ ③ 拍の並び（動的計画法）④ 小節の頭 ⑤ 拍ごとの大きさ ⑥ 演出プラン（場面の切れ目・盛り上がり 0〜3・形・ため・見せ場 ★）
+async function songAnalyze(ab){
+  const sr = ab.sampleRate, c0 = ab.getChannelData(0), c1 = ab.numberOfChannels > 1 ? ab.getChannelData(1) : c0;
+  const H = Math.round(sr / 100), M = Math.floor(ab.length / H), fps = sr / H;
+  if (M < 400) return null;
+  const tick = () => new Promise((r) => setTimeout(r));
+  const eL = new Float32Array(M), eM = new Float32Array(M), eH = new Float32Array(M);
+  const a1 = 1 - Math.exp(-2 * Math.PI * 150 / sr), a2 = 1 - Math.exp(-2 * Math.PI * 2000 / sr);
+  let l1 = 0, l1b = 0, l2 = 0, l2b = 0;
+  for (let m = 0, n = 0; m < M; m++){
+    let sL = 0, sM = 0, sH = 0;
+    for (let i = 0; i < H; i++, n++){ const x = (c0[n] + c1[n]) * 0.5; l1 += (x - l1) * a1; l1b += (l1 - l1b) * a1; l2 += (x - l2) * a2; l2b += (l2 - l2b) * a2; const mid = l2b - l1b, hi = x - l2b; sL += l1b * l1b; sM += mid * mid; sH += hi * hi; }
+    eL[m] = sL / H; eM[m] = sM / H; eH[m] = sH / H;
+    if ((m & 4095) === 4095) await tick();
+  }
+  const lg = (e, m) => Math.log(1 + 3000 * (e[m] + e[Math.max(0, m - 1)]) * 0.5);
+  const on = new Float32Array(M), onL = new Float32Array(M);
+  for (let m = 2; m < M; m++){ const dL = Math.max(0, lg(eL, m) - lg(eL, m - 2)), dM = Math.max(0, lg(eM, m) - lg(eM, m - 2)), dH = Math.max(0, lg(eH, m) - lg(eH, m - 2)); onL[m] = dL; on[m] = dL + dM * 0.6 + dH * 0.35; }
+  { const raw = on.slice(), W = 50; let acc = 0, sd = 0;
+    for (let m = 0; m < M; m++){ acc += raw[m]; if (m >= W) acc -= raw[m - W]; on[m] = Math.max(0, raw[m] - acc / Math.min(m + 1, W)); sd += on[m] * on[m]; }
+    sd = Math.sqrt(sd / M) || 1; for (let m = 0; m < M; m++) on[m] /= sd; }
+  await tick();
+  const acf = new Float32Array(331);
+  for (let lag = 25; lag <= 330; lag++){ let s = 0; for (let m = 0; m + lag < M; m++) s += on[m] * on[m + lag]; acf[lag] = s / (M - lag); }
+  let P = 50, bs = -1;
+  for (let lag = 30; lag <= 110; lag++){ const sc = (acf[lag] + 0.5 * acf[lag * 2] + 0.25 * acf[lag * 3]) * Math.exp(-0.5 * Math.pow(Math.log2(lag / 50) / 0.9, 2)); if (sc > bs){ bs = sc; P = lag; } }
+  { const y0 = acf[P - 1], y1 = acf[P], y2 = acf[P + 1], d = y0 - 2 * y1 + y2; if (d < 0) P += Math.max(-0.5, Math.min(0.5, 0.5 * (y0 - y2) / d)); }
+  await tick();
+  const smo = new Float32Array(M); let mx = 0;
+  for (let m = 1; m < M - 1; m++){ smo[m] = on[m - 1] * 0.25 + on[m] * 0.5 + on[m + 1] * 0.25; if (smo[m] > mx) mx = smo[m]; }
+  const Cs = new Float32Array(M), back = new Int32Array(M).fill(-1);
+  const dLo = Math.round(P * 2), dHi = Math.max(1, Math.round(P / 2)), pen = new Float32Array(dLo + 1);
+  for (let d = dHi; d <= dLo; d++) pen[d] = -100 * Math.pow(Math.log(d / P), 2);
+  let first = true;
+  for (let x = 0; x < M; x++){
+    let bv = -1e9, bj = -1;
+    for (let d = dHi; d <= dLo && d <= x; d++){ const v = Cs[x - d] + pen[d]; if (v > bv){ bv = v; bj = x - d; } }
+    Cs[x] = smo[x] + (bj < 0 ? 0 : bv);
+    if (bj < 0 || (first && smo[x] < 0.01 * mx)) continue;
+    back[x] = bj; first = false;
+  }
+  let end = M - 1; { let bv = -1e9; for (let x = Math.max(0, M - Math.round(P * 2)); x < M; x++) if (Cs[x] > bv){ bv = Cs[x]; end = x; } }
+  const bf = []; for (let x = end; x >= 0; x = back[x]) bf.push(x); bf.reverse();
+  const nb = bf.length; if (nb < 8) return null;
+  const ph = [0, 0, 0, 0];
+  bf.forEach((f, i) => { let v = 0; for (let m = Math.max(0, f - 3); m <= Math.min(M - 1, f + 3); m++) v = Math.max(v, onL[m]); ph[i % 4] += v; });
+  const bar0 = ph.indexOf(Math.max(...ph));
+  const pre = new Float64Array(M + 1); for (let m = 0; m < M; m++) pre[m + 1] = pre[m] + eL[m] + eM[m] + eH[m];
+  const k0 = Math.floor(bf[0] / P), fr = [];
+  for (let k = k0; k >= 1; k--) fr.push(bf[0] - k * P);
+  for (const f of bf) fr.push(f);
+  for (let f = bf[nb - 1] + P; f < M; f += P) fr.push(f);
+  const nAll = fr.length, lv = new Float32Array(nAll); let emax = 1e-12;
+  for (let i = 0; i < nAll; i++){ const a = Math.max(0, Math.round(fr[i])), b = Math.min(M, Math.round(i + 1 < nAll ? fr[i + 1] : fr[i] + P)); lv[i] = Math.sqrt((pre[b] - pre[a]) / Math.max(1, b - a)); if (lv[i] > emax) emax = lv[i]; }
+  for (let i = 0; i < nAll; i++) lv[i] /= emax;
+  const B0 = (bar0 + k0) % 4, bars = [];
+  for (let i = B0; i + 4 <= nAll; i += 4) bars.push({i, e:(lv[i] + lv[i + 1] + lv[i + 2] + lv[i + 3]) / 4});
+  const nBar = bars.length; let Emax = 1e-9; for (const b of bars) if (b.e > Emax) Emax = b.e;
+  const nov = [];
+  for (let j = 2; j + 1 < nBar; j++){ const a = (bars[j - 2].e + bars[j - 1].e) / 2, b = (bars[j].e + bars[j + 1].e) / 2; if (Math.abs(b - a) > 0.1 * Emax && (b > a * 1.2 || b < a * 0.83)) nov.push([Math.abs(b - a), j, b - a]); }
+  { const jump = (j) => bars[j].e - bars[j - 1].e;
+    for (const c of nov){ let best = c[1]; for (const j of [c[1] - 1, c[1] + 1]) if (j >= 2 && j + 1 < nBar && (c[2] > 0 ? jump(j) > jump(best) : jump(j) < jump(best))) best = j; c[1] = best; } }
+  nov.sort((x, y) => y[0] - x[0]);
+  const cut = [0]; for (const [, j] of nov) if (j >= 4 && nBar - j >= 2 && cut.every((c) => Math.abs(c - j) >= 4)) cut.push(j);
+  cut.sort((x, y) => x - y);
+  const secs = cut.map((j0, s) => { const j1 = s + 1 < cut.length ? cut[s + 1] : nBar; let e = 0; for (let j = j0; j < j1; j++) e += bars[j].e; return {j0, j1, q:e / Math.max(1, j1 - j0) / Emax, L:0}; });
+  { let lo = 1, hi = 0; for (const S of secs){ if (S.q < lo) lo = S.q; if (S.q > hi) hi = S.q; }
+    for (const S of secs){ const n = hi - lo > 0.08 ? (S.q - lo) / (hi - lo) : 0.6; S.L = n >= 0.8 ? 3 : n >= 0.5 ? 2 : n >= 0.22 ? 1 : 0; } }
+  let seed = (nAll * 7919 + Math.round(P * 131)) >>> 0; const rng = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+  const POOL = POOLS.map((p) => { const a = p.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; });   // 曲ごとに順番をかきまぜる（同じ曲なら、いつも同じ演出）
+  const LV = [0.3, 0.55, 0.8, 1], pi = [0, 0, 0, 0], STEP = P / fps * 4 >= 1.5 ? 4 : 8;
+  let lastMode = -1; const pick = (L) => { let m = POOL[L][pi[L]++ % POOL[L].length]; if (m === lastMode) m = POOL[L][pi[L]++ % POOL[L].length]; lastMode = m; return m; };
+  const cues = new Map(), put = (i, mode, L, big) => cues.set(i, {mode, lv:LV[L], big});
+  const eS = bars.map((b) => b.e).sort((x, y) => x - y), eLo = eS[Math.floor(nBar * 0.1)] ?? 0, eHi = eS[Math.floor(nBar * 0.9)] ?? 1;
+  const near = (S, j) => {
+    let e = 0, n = 0; for (let k = j; k < Math.min(S.j1, j + STEP); k++){ e += bars[k].e; n++; }
+    const v = eHi - eLo > 0.08 * Emax ? (e / Math.max(1, n) - eLo) / (eHi - eLo) : 0.5, l = v >= 0.8 ? 3 : v >= 0.5 ? 2 : v >= 0.22 ? 1 : 0;
+    return Math.max(0, Math.min(3, Math.round((S.L + l) / 2 + (l > S.L ? 0.01 : -0.01))));
+  };
+  let lastL = 0;
+  if (nBar){
+    put(0, TEXT_ID, secs[0].L, false);   // 幕あけ = 曲名の文字
+    secs.forEach((S, s) => {
+      const prev = secs[s - 1], next = secs[s + 1], len = S.j1 - S.j0;
+      if (s === 0){ const hold = Math.min(2, len >> 1); if (hold >= 1) put(bars[S.j0 + hold].i, pick(S.L), S.L, false); }
+      else put(bars[S.j0].i, pick(S.L), S.L, S.L > prev.L && S.L >= 2);
+      lastL = S.L;
+      for (let j = S.j0 + STEP; j + 2 < S.j1; j += STEP){ const L = near(S, j); put(bars[j].i, pick(L), L, L > lastL && L >= 2); lastL = L; }
+      if (next && next.L > S.L && next.L >= 2 && len >= 4) put(bars[S.j1 - 2].i, TEXT_ID, S.L, false);   // ため
+    });
+  }
+  const plan = [...cues.entries()].sort((a, b) => a[0] - b[0]).map(([i, c]) => ({t:fr[i] / fps, mode:c.mode, lv:c.lv, big:c.big}));
+  return {beats:Float32Array.from(fr, (f) => f / fps), bar0:B0, plan, scenes:plan.length, bigs:plan.filter((c) => c.big).length, bpm:60 * fps / P, period:P / fps,
+    text:plan.map((c) => c.t.toFixed(1) + ':' + (c.big ? '★' : '') + SHAPES[c.mode].name).join(' ')};
+}
+// メニューの板の「曲をえらぶ」ページ（VR の中から選べる）
+function songPage(open){
+  if (!open){ MB.items = MB.main; MB.hot = -1; menuDirty(); return; }
+  if (!MB.open) menuToggle(true);
+  const P = 16, list = SW.songs, np = Math.max(1, Math.ceil(list.length / P)), pg = SW.songPg % np, it = [{id:'sback', label:() => '◀ メニューへ戻る', on:() => false, act:() => songPage(false)}];
+  if (SW.song) it.push({id:'sstop', label:() => '⏹ 曲を止める', on:() => true, act:() => { songStop(); songPage(false); }});
+  list.slice(pg * P, pg * P + P).forEach((x, k) => it.push({id:'s' + k, label:() => '♪ ' + x.name.replace(/\.\w+$/, ''), on:() => SW.song?.key === x.path, act:() => { if (x.file) songPlay(null, x.file); else songPlay(x); menuToggle(false); }}));
+  if (np > 1) it.push({id:'snext', label:() => '▶ つぎの曲（' + (pg + 1) + '/' + np + '）', on:() => false, act:() => { SW.songPg = pg + 1; songPage(true); }});
+  if (!list.length) it.push({id:'snone', label:() => '曲がまだありません（VR に入る前に、はじめの画面の「🎵 曲を選ぶ」で）', on:() => false, act:() => {}});
+  MB.items = it; MB.hot = -1; menuDirty();
+}
+async function songMenu(){ if (!xrOn()){ toast('🎵 選ぶ窓が出ないときは、右下の「🎵 曲」ボタンから'); return songPick(); } await songScan(); songPage(true); }   // Web 版: 画面では端末の曲を選ぶ窓 ／ VR の中では、入る前に選んだ曲の一覧
+const songIn = document.createElement('input'); songIn.type = 'file'; songIn.accept = 'audio/*,.mp3,.wav,.flac,.ogg,.m4a'; songIn.style.display = 'none'; document.body.appendChild(songIn);
+SW.picked = [];
+songIn.onchange = () => { const f = songIn.files?.[0]; songIn.value = ''; if (!f) return; if (!SW.picked.some((x) => x.name === f.name && x.size === f.size)) SW.picked.push(f);
+  $('songName').textContent = '🎵「' + f.name.replace(/\.\w+$/, '') + '」' + (started ? '' : ' — はじめると鳴ります（VR に入っても）'); if (started) songPlay(null, f); };
+function songPick(){ if (xrOn()) return songMenu(); audioInit(); songIn.click(); }   // PC = ファイルを選ぶ窓（VR の中ではメニューの曲の一覧）
+addEventListener('dragover', (e) => e.preventDefault());
+addEventListener('drop', (e) => { e.preventDefault(); const f = [...(e.dataTransfer?.files || [])].find((x) => /\.(mp3|wav|flac|ogg|m4a)$/i.test(x.name) || /^audio\//.test(x.type)); if (f){ if (!started) startPC(); songPlay(null, f); } });
+const showState = () => ({show:SW.on, song:!!SW.song, title:SW.title, L:SW.L, blocks:SW.blocks, bars:SW.bars, beats:SW.beats, tames:SW.tames, bigs:SW.bigs, fws:SW.fws, confs:SW.confs, scene:SW.sceneName,
+  lzV:+SW.lzV.toFixed(2), crV:+SW.crV.toFixed(2), trV:+SW.trV.toFixed(2), frV:+SW.frV.toFixed(2), sunV:+SW.sunV.toFixed(2), lzP:LZ_PAT[SW.lzP].name, crP:CR_PAT[SW.crP].name, shapeName:SH.names[SH.mode],
+  bands:SW.bands.map((x) => +x.toFixed(2)), fwAlive:(() => { let n = 0; for (let i = 0; i < FWN; i++){ const a = t - fwT[i * 4]; if (a >= 0 && a < fwT[i * 4 + 1]) n++; } return n; })(), rockets:FW.rockets.length, loading:SW.loading, songN:SW.songs.length,
+  plan:SW.song?.g?.text?.slice(0, 300) || '', bpm:SW.song ? +SW.song.g.bpm.toFixed(1) : BEAT.bpm, tx:TX.mode, txOn:t < TX.until});
+
+/* ---- v5: 🧪 GLSL の世界（オリジナル 4 つ）: 花の深淵・氷晶の峡谷・雲海の上・月の地平 ---- */
+// 10/12 03:00 そうたさん（#つぶやきGLSL の作品を 4 つ見せて）「オリジナルに改造してください」
+// ・どれも「目の向き d から色を決める」作り（光を奥へ飛ばして描く）。考え方（対数の座標で奥へ進みつづける・フラクタルの重ね合わせ）だけ借りて、式・形・色はここで一から作った
+// ・重いので、立方体の絵（768×768 × 6 面）に描いてから空に貼る（VR では 1 コマに 2 面ずつ描きかえる）。色 = いまの色の組 ／ 流れの速さ = ズーム（おまかせ・中へ進む・遠ざかる・止める）
+const GL_SRC = [
+`// 🌸 花の深淵（オリジナル）: 正面の少し先の点を中心にした「対数の球座標」= 深さ log R・中心からの角・まわりの角。
+// つまみ uV: x = 花びらの数（2〜6）・y = 開きぐあい・z = 線の細さ・w = ねじれ（0.5 = いつもの形）
+// 花びらの面が、あなたのまわりまで大きく開いている（横を向いても花の中）。花は中心から湧きつづける（流れ = uFlow）
+vec3 world(vec3 d){
+  vec3 q = vec3(0., 0., -.55), col = vec3(0.); float R = 1.;
+  for (int k = 0; k < 80; k++){
+    R = length(q);
+    vec3 c = vec3(log(R) - uFlow, acos(clamp(q.z / R, -1., 1.)), atan(q.y, q.x) * floor(2. + uV.x * 4.));
+    c.z += c.x * (uV.w - .5) * 3.;
+    float f = 0., s = 1.;
+    for (int j = 0; j < 6; j++){ f += abs(sin(c.x * s * 2. + sin(c.z * s)) * cos(c.z * s + c.y * s * 3.)) / s; s *= 2.; }
+    float e = c.y - (1.35 + uV.y * .8) - f * .32 + .25 * sin(c.x * 3.);   // 開きぐあいも、深さで波打つ
+    col += pal(c.x * .15 + f * .3 + c.y * .1 + uHue) * .02 / (1. + abs(e) * (20. + uV.z * 60.));
+    q += d * max(abs(e), .006) * R * .3;
+    if (R > 30.) break;
+  }
+  return col * (1. + uB.x * .6);
+}`,
+`// ❄ 氷晶の峡谷（オリジナル）: 正面へまっすぐ続く谷。両側の壁は、とがった稜線の重なり（リッジ）= 氷の結晶。奥へ飛びつづける（流れ = uFlow）
+// つまみ uV: x = 谷の広さ・y = 結晶の細かさ・z = 稜線のとがり・w = 壁の高さ（0.5 = いつもの形）／ uW.x = 色の濃さ（0.5 = いつもの色。1 に近いほど、白い氷も色の組の色に）
+float hB(vec2 p){ p = fract(p * vec2(233.34, 851.73)); p += dot(p, p + 23.45); return fract(p.x * p.y); }
+float nB(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(hB(i), hB(i + vec2(1, 0)), f.x), mix(hB(i + vec2(0, 1)), hB(i + vec2(1, 1)), f.x), f.y); }
+float ridgeB(vec2 p, int oct){ float s = 0., a = .55; mat2 m = mat2(1.6, 1.2, -1.2, 1.6); for (int j = 0; j < 7; j++){ if (j >= oct) break; float n = 1. - abs(nB(p) * 2. - 1.); s += pow(n, 1. + uV.z * 2.) * a; p = m * p; a *= .48; } return s; }
+float hgtB(vec2 xz, int oct){ float w = abs(xz.x); return pow(max(w - (.4 + uV.x), 0.), 1.35) * .55 + ridgeB(xz * (.25 + uV.y * .4), oct) * (.8 + uV.w * .8 + w * .25) - 1.7; }   // 谷の底は低く、外へ行くほど壁が立ち上がる
+vec3 world(vec3 d){
+  float cw = max(uW.x - .5, 0.) * 1.6;
+  vec3 ro = vec3(0., 0., uFlow * 8.), sky = mix(pal(.62 + uHue) * .25, mix(vec3(.75, .9, 1.), pal(.45 + uHue), cw) * .9, pow(max(0., 1. - abs(d.y) * 1.6), 6.));   // 空: 地平の近くは白く光る
+  sky += mix(vec3(.8, .95, 1.), pal(.5 + uHue), cw) * pow(max(dot(d, vec3(0., .05, 1.)), 0.), 90.) * 1.5;   // 谷の奥の光
+  float tt = .05, hit = -1.;
+  for (int k = 0; k < 110; k++){
+    vec3 p = ro + d * tt; float h = p.y - hgtB(p.xz, 5);
+    if (h < .002 * tt){ hit = tt; break; }
+    tt += max(h * .45, .01); if (tt > 70.) break;
+  }
+  if (hit < 0.) return sky;
+  vec3 p = ro + d * hit; vec2 e = vec2(.03, 0.);
+  vec3 n = normalize(vec3(hgtB(p.xz - e.xy, 7) - hgtB(p.xz + e.xy, 7), 2. * e.x, hgtB(p.xz - e.yx, 7) - hgtB(p.xz + e.yx, 7)));
+  vec3 L = normalize(vec3(.3, .8, .5)); float dif = max(dot(n, L), 0.), rim = pow(1. - max(dot(n, -d), 0.), 3.);
+  float sp = pow(max(dot(reflect(d, n), L), 0.), 40.);
+  vec3 ice = mix(pal(.55 + p.y * .08 + uHue) * (.5 + cw * .5), vec3(.85, .95, 1.), .45 * (1. - min(cw, 1.)));
+  vec3 col = ice * (.12 + dif * .9) + mix(vec3(.7, .9, 1.), pal(.35 + uHue), cw) * rim * .8 + vec3(1.) * sp * .8 + pal(.3 + uHue) * smoothstep(-1.2, -1.7, p.y) * .25;   // 谷底は、ほんのり色づく
+  return mix(col, sky, smoothstep(12., 65., hit));   // 遠くは空気にとける
+}`,
+`// ☁ 雲海の上（オリジナル）: 足もとに雲の海（立体の雲を、光の向きから照らす）。上は夜明けの空と、正面の低い太陽。雲は、ゆっくり正面から流れてくる（流れ = uFlow）
+// つまみ uV: x = 雲のきめの大きさ・y = 雲の高さ・z = 太陽の高さ・w = 雲の量（0.5 = いつもの形）／ uW.x = 色の濃さ（0.5 = いつもの色。1 に近いほど、白い雲も色の組の色に）
+float hC(vec3 p){ p = fract(p * .1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
+float nC(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3. - 2. * f);
+  return mix(mix(mix(hC(i), hC(i + vec3(1, 0, 0)), f.x), mix(hC(i + vec3(0, 1, 0)), hC(i + vec3(1, 1, 0)), f.x), f.y),
+             mix(mix(hC(i + vec3(0, 0, 1)), hC(i + vec3(1, 0, 1)), f.x), mix(hC(i + vec3(0, 1, 1)), hC(i + vec3(1, 1, 1)), f.x), f.y), f.z); }
+float densC(vec3 p){   // 雲の濃さ: 層の上の面は、もこもこ盛り上がる
+  vec3 q = p * (.08 + uV.x * .16) + vec3(0., 0., -uFlow * 1.5); float f = nC(q) * .5 + nC(q * 2.03) * .25 + nC(q * 4.1) * .14 + nC(q * 8.3) * .07;
+  float top = -4.4 + (uV.y - .5) * 2. + f * 3.2;   // 雲の上の面の高さ（-4.4〜-1.2）
+  return clamp((top - p.y) * 1.3, 0., 1.) * smoothstep(-11., -7., p.y) * smoothstep(.46 - uV.w * .2, .72 - uV.w * .2, f + (top - p.y) * .06);
+}
+vec3 world(vec3 d){
+  vec3 sun = normalize(vec3(.15, .02 + uV.z * .14, 1.));
+  float sd = max(dot(d, sun), 0.);
+  vec3 cs = floor(d * 230.); float st = smoothstep(.9975, 1., hC(cs * 1.7 + 3.)) * smoothstep(.1, .5, d.y);   // 上のほうには、うすい星
+  vec3 sky = mix(pal(.7 + uHue) * .3, mix(vec3(1., .62, .42), pal(.05 + uHue), .3), pow(max(0., 1. - max(d.y, 0.) * 1.7), 3.)) + vec3(st) * .8;
+  sky += vec3(1., .85, .6) * (pow(sd, 400.) * 3. + pow(sd, 12.) * .35);
+  if (d.y > -.015) return sky;
+  vec3 col = vec3(0.); float T = 1., tt = (-1.2 + max(uV.y - .5, 0.) * 2.) / d.y;
+  for (int k = 0; k < 48; k++){
+    vec3 p = d * tt; float den = densC(p);
+    if (den > .01){
+      float lit = clamp((den - densC(p + sun * .9)) * 1.8 + .5, 0., 1.);
+      vec3 c = mix(pal(.62 + uHue) * .3 + vec3(.1, .08, .14), mix(vec3(1., .9, .8), pal(.15 + uHue) * 1.2, max(uW.x - .5, 0.) * 1.4), lit) * (1. + uB.y * .3);
+      float a = den * .5; col += T * a * c; T *= 1. - a; if (T < .03) break;
+    }
+    tt += .2 + tt * .025; if (tt > 140.) break;
+  }
+  return col + T * mix(sky, pal(.6 + uHue) * .2, .5);
+}`,
+`// 🌙 月の地平（オリジナル）: クレーターだらけの地面の上を、ゆっくり漂って進む。低い太陽で、ふちが光る。正面の空には、大きな輪のある星（流れ = uFlow）
+// つまみ uV: x = クレーターの細かさ・y = 輪のある星の大きさ・z = 太陽の高さ・w = 地面の起伏（0.5 = いつもの形）／ uW.x = 色の濃さ（0.5 = いつもの色。1 に近いほど、灰色の地面も色の組の色に）
+float hD(vec2 p){ p = fract(p * vec2(443.897, 441.423)); p += dot(p, p.yx + 19.19); return fract((p.x + p.y) * p.x); }
+float hD3(vec3 p){ p = fract(p * vec3(.1031, .1030, .0973)); p += dot(p, p.yxz + 33.33); return fract((p.x + p.y) * p.z); }
+float nD(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(hD(i), hD(i + vec2(1, 0)), f.x), mix(hD(i + vec2(0, 1)), hD(i + vec2(1, 1)), f.x), f.y); }
+float craterD(vec2 p){   // 1 マスに 1 つ。すり鉢 ＋ ふちの盛り上がり
+  vec2 i = floor(p), f = fract(p); float h = 0.;
+  for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++){
+    vec2 g = vec2(x, y), o = vec2(hD(i + g), hD(i + g + 17.3)); float r = .18 + .3 * hD(i + g + 41.7), dd = length(g + o - f) / r;
+    if (dd < 1.6) h += (dd < 1. ? (dd * dd - 1.) * .55 : 0.) + exp(-pow((dd - 1.) * 4., 2.)) * .18;
+  }
+  return h * .5;
+}
+float hgtD(vec2 p, int oct){
+  float h = (nD(p * .15) - .5) * (1. + uV.w * 2.4) + craterD(p * (.12 + uV.x * .2)) * 2.4 + craterD(p * .7 + 3.1) * .6;
+  float a = .25, s = 1.3; for (int j = 0; j < 5; j++){ if (j >= oct) break; h += (nD(p * s) - .5) * a; s *= 2.1; a *= .45; }
+  return h - 2.4;
+}
+vec3 world(vec3 d){
+  vec3 ro = vec3(0., 0., uFlow * 3.), L = normalize(vec3(-.6, .06 + uV.z * .32, .5));
+  vec3 cs = floor(d * 230.); float st = smoothstep(.9965, 1., hD3(cs)) * step(-.05, d.y) * (.5 + .5 * hD3(cs + 7.));   // 星（向きのマス目ごとに）
+  vec3 sky = vec3(st) * 1.2 + pal(.75 + uHue) * .05 * (1. - max(d.y, 0.));
+  vec3 pc = normalize(vec3(.35, .32, 1.)), rn = normalize(vec3(.2, 1., -.25)); float sr = .07 + uV.y * .14;                            // 輪のある星
+  vec3 vp = d - pc * dot(d, pc); float vr = length(vp) / sr, front = dot(d, pc);
+  if (front > 0. && vr < 1.){ vec3 n = normalize(vp / sr - pc * sqrt(1. - vr * vr)); sky = pal(.12 + dot(n, rn) * 1.6 + uHue) * (.06 + max(dot(n, L), 0.) * 1.15); }
+  float tr = dot(pc, rn) / dot(d, rn); vec3 rp = d * tr - pc; float rr = length(rp) / sr;
+  if (tr > 0. && rr > 1.25 && rr < 2.2 && (vr > 1. || dot(rp, pc) < 0.)) sky += pal(.4 + rr * .4 + uHue) * .5 * (.55 + .45 * sin(rr * 22.)) * smoothstep(2.2, 2.05, rr);
+  float tt = .05, hit = -1.;
+  for (int k = 0; k < 120; k++){ vec3 p = ro + d * tt; float h = p.y - hgtD(p.xz, 3); if (h < .002 * tt){ hit = tt; break; } tt += max(h * .5, .02); if (tt > 90.) break; }
+  if (hit < 0.) return sky;
+  vec3 p = ro + d * hit; vec2 e = vec2(.04, 0.);
+  vec3 n = normalize(vec3(hgtD(p.xz - e.xy, 5) - hgtD(p.xz + e.xy, 5), 2. * e.x, hgtD(p.xz - e.yx, 5) - hgtD(p.xz + e.yx, 5)));
+  float dif = max(dot(n, L), 0.), amb = .06 + .06 * n.y;
+  vec3 col = mix(vec3(.78, .76, .74), pal(.2 + p.y * .1 + uHue), max(uW.x - .5, 0.) * 1.6) * dif * 1.1 + pal(.6 + uHue) * amb;
+  return mix(col, pal(.7 + uHue) * .03, smoothstep(30., 88., hit));
+}`,
+`// 🫧 マンデルバルブ（オリジナルの組み方）: 3 次元のマンデルブロ集合。指数が 7〜9 でゆっくり変わり、形がうごめく。正面の近くに浮かび、ゆっくり回る（流れ = uFlow）
+// つまみ uV: x = べき乗（5〜11。形の細かさ）・y = 傾き・z = 光のにじみ・w = 遠さ（0.5 = いつもの形）
+float deE(vec3 p, out float trap){
+  vec3 z = p; float dr = 1., r = 0., pw = 5. + uV.x * 6. + 1.2 * sin(uT * .045); trap = 1e9;
+  for (int i = 0; i < 7; i++){
+    r = length(z); if (r > 2.) break;
+    float th = acos(clamp(z.z / r, -1., 1.)) * pw, ph = atan(z.y, z.x) * pw;
+    dr = pow(r, pw - 1.) * pw * dr + 1.;
+    z = pow(r, pw) * vec3(sin(th) * cos(ph), sin(th) * sin(ph), cos(th)) + p;
+    trap = min(trap, length(z - vec3(.2, .1, 0.)));
+  }
+  return .5 * log(max(r, 1e-4)) * r / dr;
+}
+vec3 starsE(vec3 d){ vec3 c = floor(d * 200.); float h = fract(sin(dot(c, vec3(12.9898, 78.233, 37.719))) * 43758.5453); return vec3(smoothstep(.996, 1., h)) * .9; }
+vec3 world(vec3 d){
+  float a = uFlow * .35, ca = cos(a), sa = sin(a), tl = -.3 + uV.y * 1.6;
+  mat3 rot = mat3(ca, 0., -sa, 0., 1., 0., sa, 0., ca) * mat3(1., 0., 0., 0., cos(tl), -sin(tl), 0., sin(tl), cos(tl));
+  vec3 ro = vec3(0., 0., -(1.35 + uV.w * .8) - .25 * sin(uFlow * .2)), bg = pal(.72 + uHue) * .06 * (1. + d.y) + starsE(d);
+  float tt = 0., trap = 0., glow = 0.; int k = 0;
+  for (k = 0; k < 110; k++){
+    vec3 p = rot * (ro + d * tt); float de = deE(p, trap);
+    glow += .024 * uV.z / (1. + de * de * 400.);
+    if (de < .0006 * (1. + tt)){ break; }
+    tt += de * .9; if (tt > 5.) break;
+  }
+  vec3 halo = pal(.55 + uHue) * glow * (1. + uB.x);
+  if (tt > 5. || k >= 110) return bg + halo;
+  float ao = 1. - float(k) / 110.;
+  vec3 col = pal(trap * 1.3 + uHue + .1) * (.15 + .95 * ao * ao) + pal(trap * .5 + .6 + uHue) * pow(ao, 6.) * .6;
+  return col + halo * .5;
+}`,
+`// 🏛 マンデルボックス（オリジナルの組み方）: 箱を折る・球で裏返す、をくり返す 3 次元フラクタル。正面に浮かぶ巨大な「箱の伽藍」が、ゆっくり回りながら近づいては離れる（流れ = uFlow）
+// つまみ uV: x = 折りの強さ・y = 箱の折り目の位置・z = 光のにじみ・w = 遠さ（0.5 = いつもの形）
+float deH(vec3 p, out float trap){
+  vec3 z = p; float dr = 1., S = -1.35 - uV.x * .3, fl = .85 + uV.y * .3; trap = 1e9;
+  for (int i = 0; i < 12; i++){
+    z = clamp(z, -fl, fl) * 2. - z;
+    float r2 = dot(z, z);
+    if (r2 < .25){ z *= 4.; dr *= 4.; } else if (r2 < 1.){ z /= r2; dr /= r2; }
+    z = z * S + p; dr = dr * abs(S) + 1.;
+    trap = min(trap, r2);
+    if (dot(z, z) > 1e4) break;
+  }
+  return length(z) / abs(dr);
+}
+vec3 starsH(vec3 d){ vec3 c = floor(d * 200.); float h = fract(sin(dot(c, vec3(12.9898, 78.233, 37.719))) * 43758.5453); return vec3(smoothstep(.996, 1., h)) * .8; }
+vec3 world(vec3 d){
+  float a = uFlow * .25, ca = cos(a), sa = sin(a), b = .6 + .2 * sin(uFlow * .13);
+  mat3 rot = mat3(ca, 0., -sa, 0., 1., 0., sa, 0., ca) * mat3(1., 0., 0., 0., cos(b), -sin(b), 0., sin(b), cos(b));
+  vec3 ro = vec3(0., 0., -(3. + uV.w * 1.2) + .9 * sin(uFlow * .21)), bg = pal(.72 + uHue) * .05 * (1. + d.y) + starsH(d);
+  float tt = 0., trap = 0., glow = 0.; int k = 0;
+  for (k = 0; k < 120; k++){
+    float de = deH(rot * (ro + d * tt), trap);
+    glow += .02 * uV.z / (1. + de * de * 300.);
+    if (de < .0006 * (1. + tt)) break;
+    tt += de * .9; if (tt > 9.) break;
+  }
+  vec3 halo = pal(.5 + uHue) * glow * (1. + uB.x);
+  if (tt > 9. || k >= 120) return bg + halo;
+  float ao = 1. - float(k) / 120.;
+  vec3 col = pal(trap * 1.6 + uHue + .2) * (.03 + .95 * pow(ao, 4.)) + vec3(1., .95, .85) * pow(ao, 14.) * .35;   // 明るすぎないように
+  return col + halo * .4;
+}`,
+`// 🫧 球の洞窟（オリジナルの組み方）: 空間をくり返し、球で裏返すことを重ねた「球のすきまの網」。どこまでも続く洞窟の、すきまの通り道を奥へ飛ぶ（流れ = uFlow）
+// つまみ uV: x = 球の裏返しの強さ・y = かすみの濃さ・z = 色の混ぜ方・w = くり返しの回数（6〜10）（0.5 = いつもの形）
+float deF(vec3 p, out vec4 orb){
+  float sc = 1., s = 1.1 + uV.x * .24 + .03 * sin(uT * .07); orb = vec4(1e3);
+  for (int i = 0; i < 10; i++){
+    if (float(i) >= 6. + uV.w * 4.) break;
+    p = 2. * fract(.5 * p + .5) - 1.;                        // くり返す
+    float r2 = dot(p, p); orb = min(orb, vec4(abs(p), r2));
+    float k = s / max(r2, 1e-6); p *= k; sc *= k;            // 球で裏返す
+  }
+  return .25 * abs(p.y) / sc;
+}
+vec3 world(vec3 d){
+  vec3 ro = vec3(-.5, -1., uFlow * .9), fogc = pal(.66 + uHue) * .05;
+  float tt = 0.; vec4 orb; int k = 0;
+  for (k = 0; k < 120; k++){
+    float de = deF(ro + d * tt, orb);
+    if (de < .0004 * (1. + tt * 4.)) break;
+    tt += de * .9; if (tt > 10.) break;
+  }
+  if (tt > 10. || k >= 120) return fogc;
+  float ao = 1. - float(k) / 120.;
+  vec3 col = pal(orb.w * (.4 + uV.z) + orb.y * .5 + uHue) * (.04 + 1.1 * ao * ao * ao) + pal(orb.x + .5 + uHue) * pow(clamp(orb.z * 2., 0., 1.), 4.) * .25 + vec3(1., .97, .9) * pow(ao, 14.) * .35 * (1. + uB.y);
+  return mix(col, fogc, 1. - exp(-tt * (.1 + uV.y * .24)));
+}`,
+`// 🧊 無限の回廊（オリジナルの組み方）: 立方体に十字の穴を、細かくなりながら何度も抜いた「すきまの構造」を、空間いっぱいに並べたもの。
+// 十字の穴の中を、まっすぐ奥へ飛ぶ。奥へ行くほど、穴の形がゆっくりねじれる。手もとの明かりで照らし、穴のふちが光る（流れ = uFlow）
+// つまみ uV: x = ねじれ・y = 穴の太さ・z = ふちの光・w = 穴の段数（3〜6）（0.5 = いつもの形）
+float boxG(vec3 p, float b){ vec3 q = abs(p) - b; return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.); }
+float deG(vec3 p, out float trap){
+  float tw = p.z * uV.x * .14 + uT * .02, ct = cos(tw), st = sin(tw); p.xy = mat2(ct, -st, st, ct) * p.xy;   // 奥へ行くほど、ねじれる
+  p = mod(p + 1., 2.) - 1.;                                                                       // 空間いっぱいに並べる
+  float d = boxG(p, 1.), s = 1.; trap = 0.;
+  for (int m = 0; m < 6; m++){
+    if (float(m) >= 3. + uV.w * 3.) break;
+    vec3 a = mod(p * s, 2.) - 1.; s *= 3.;
+    vec3 r = abs(1. - 3. * abs(a));
+    float hole = (min(max(r.x, r.y), min(max(r.y, r.z), max(r.z, r.x))) - (.8 + uV.y * .4)) / s;                  // 十字の穴
+    if (hole > d){ d = hole; trap = float(m) / 5. + length(a) * .15; }
+  }
+  return d;
+}
+vec3 world(vec3 d){
+  vec3 ro = vec3(0., 0., uFlow * 1.6), fogc = pal(.68 + uHue) * .03;
+  float tt = 0., trap = 0.; int k = 0;
+  for (k = 0; k < 100; k++){
+    float de = deG(ro + d * tt, trap);
+    if (de < .0005 * (1. + tt * 3.)) break;
+    tt += de; if (tt > 24.) break;
+  }
+  if (tt > 24. || k >= 100) return fogc;
+  vec3 p = ro + d * tt; float e = .0015 * (1. + tt), tr;
+  vec3 n = normalize(vec3(deG(p + vec3(e, 0., 0.), tr) - deG(p - vec3(e, 0., 0.), tr), deG(p + vec3(0., e, 0.), tr) - deG(p - vec3(0., e, 0.), tr), deG(p + vec3(0., 0., e), tr) - deG(p - vec3(0., 0., e), tr)));
+  float ao = 1. - float(k) / 100., lam = max(dot(n, -d), 0.), rim = pow(1. - lam, 4.);
+  vec3 col = pal(trap + tt * .025 + uHue) * (.015 + .85 * lam * lam * ao * ao) + pal(trap + .45 + uHue) * rim * ao * uV.z * 1.2 + vec3(.9, .95, 1.) * pow(lam, 30.) * .25 * (1. + uB.z);
+  return mix(col, fogc, 1. - exp(-tt * .16));
+}`,
+];
+const GL_VARS = {"pals":[{"name":"氷の青白","a":[0.55,0.7,0.82],"b":[0.3,0.25,0.2],"c":[1,1,1],"d":[0.6,0.65,0.7]},{"name":"金と黒","a":[0.5,0.38,0.2],"b":[0.5,0.38,0.2],"c":[1,1,1],"d":[0,0,0]},{"name":"桜","a":[0.85,0.62,0.7],"b":[0.15,0.3,0.25],"c":[1,1,1],"d":[0,0.1,0.05]},{"name":"ネオン（桃と水色）","a":[0.5,0.45,0.7],"b":[0.5,0.45,0.3],"c":[1,1,1],"d":[0,0.5,0.25]},{"name":"銀","a":[0.5,0.5,0.52],"b":[0.48,0.48,0.48],"c":[1,1,1],"d":[0,0,0]},{"name":"緑と紫","a":[0.45,0.5,0.45],"b":[0.45,0.5,0.45],"c":[1,1,1],"d":[0.6,0,0.6]},{"name":"夕暮れ（橙と紺）","a":[0.55,0.4,0.45],"b":[0.45,0.35,0.4],"c":[1,1,1],"d":[0,0.05,0.5]},{"name":"翡翠","a":[0.3,0.6,0.55],"b":[0.3,0.35,0.35],"c":[1,1,1],"d":[0.5,0.2,0.25]}],"worlds":[{"rand":[[0,1],[0.15,0.85],[0.1,0.95],[0.1,0.9]],"list":[{"name":"基本","v":[0.5,0.5,0.5,0.5],"pal":-1,"hue":0,"sp":1},{"name":"六弁の桜（ゆっくり）","v":[1,0.35,0.6,0.5],"pal":2,"hue":0,"sp":0.6},{"name":"ねじれ渦（速い）","v":[0.5,0.6,0.4,0.95],"pal":3,"hue":0.2,"sp":1.7},{"name":"三弁の金線","v":[0.25,0.5,0.95,0.3],"pal":1,"hue":0,"sp":1}]},{"rand":[[0.1,0.9],[0.1,0.95],[0.1,0.95],[0.2,0.85]],"list":[{"name":"基本","v":[0.5,0.5,0.5,0.5],"pal":-1,"hue":0,"sp":1},{"name":"狭い氷の裂け目（速い）","v":[0.1,0.6,0.7,0.8],"pal":0,"hue":0,"sp":1.5},{"name":"広い夕焼けの谷（ゆっくり）","v":[0.9,0.3,0.3,0.4],"w":[1,0.5,0.5,0.5],"pal":6,"hue":0,"sp":0.6},{"name":"緑と紫の水晶","v":[0.5,0.95,0.9,0.55],"w":[0.9,0.5,0.5,0.5],"pal":5,"hue":0,"sp":1}]},{"rand":[[0.15,0.85],[0.2,0.8],[0.05,0.95],[0.15,0.9]],"list":[{"name":"基本","v":[0.5,0.5,0.5,0.5],"pal":-1,"hue":0,"sp":1},{"name":"夜明け前（ゆっくり）","v":[0.5,0.5,0.1,0.6],"w":[0.8,0.5,0.5,0.5],"pal":6,"hue":0,"sp":0.6},{"name":"真昼の雲（速い）","v":[0.3,0.7,0.9,0.85],"pal":0,"hue":0,"sp":1.5},{"name":"ネオンの雲の夜","v":[0.7,0.3,0.05,0.3],"w":[0.95,0.5,0.5,0.5],"pal":3,"hue":0,"sp":0.8}]},{"rand":[[0.1,0.9],[0.1,0.95],[0.1,0.9],[0.1,0.95]],"list":[{"name":"基本","v":[0.5,0.5,0.5,0.5],"pal":-1,"hue":0,"sp":1},{"name":"大きな星（ゆっくり）","v":[0.5,0.95,0.5,0.5],"w":[0.7,0.5,0.5,0.5],"pal":-1,"hue":0.3,"sp":0.6},{"name":"夕焼けの荒れ地（速い）","v":[0.85,0.4,0.2,0.95],"w":[0.95,0.5,0.5,0.5],"pal":6,"hue":0,"sp":1.5},{"name":"銀の砂漠","v":[0.2,0.2,0.8,0.2],"pal":4,"hue":0,"sp":1}]},{"rand":[[0,1],[0.1,0.9],[0.2,0.9],[0.1,0.8]],"list":[{"name":"基本","v":[0.5,0.5,0.5,0.5],"pal":-1,"hue":0,"sp":1},{"name":"細かいつぼみ（ゆっくり）","v":[1,0.5,0.5,0.5],"pal":-1,"hue":0.25,"sp":0.6},{"name":"丸い桜の実（速い）","v":[0,0.75,0.8,0.4],"pal":2,"hue":0,"sp":1.6},{"name":"金の近景","v":[0.6,0.2,0.3,0.05],"pal":1,"hue":0,"sp":0.8}]},{"rand":[[0.2,0.8],[0.3,0.7],[0.3,0.9],[0.4,1]],"list":[{"name":"基本","v":[0.5,0.5,0.5,0.5],"pal":-1,"hue":0,"sp":1},{"name":"鋭い銀の折り","v":[0.75,0.4,0.5,0.6],"pal":4,"hue":0,"sp":1},{"name":"丸いネオンの折り（速い）","v":[0.25,0.6,0.6,0.7],"pal":3,"hue":0,"sp":1.6},{"name":"遠くの金の伽藍（ゆっくり）","v":[0.5,0.5,0.8,1],"pal":1,"hue":0,"sp":0.6}]},{"rand":[[0.15,0.85],[0.1,0.9],[0.1,0.9],[0.1,0.95]],"list":[{"name":"基本","v":[0.5,0.5,0.5,0.5],"pal":-1,"hue":0,"sp":1},{"name":"翡翠の霧（ゆっくり）","v":[0.5,0.9,0.4,0.5],"pal":7,"hue":0,"sp":0.6},{"name":"細かい泡（速い）","v":[0.7,0.3,0.8,0.95],"pal":3,"hue":0,"sp":1.5},{"name":"夕暮れの大きな球","v":[0.2,0.4,0.2,0.1],"pal":6,"hue":0,"sp":1}]},{"rand":[[0,1],[0.1,0.95],[0.2,0.9],[0,1]],"list":[{"name":"基本","v":[0.5,0.5,0.5,0.5],"pal":-1,"hue":0,"sp":1},{"name":"強いねじれ（速い）","v":[1,0.5,0.5,0.5],"pal":5,"hue":0,"sp":1.6},{"name":"太い穴の金","v":[0.3,0.95,0.8,0.3],"pal":1,"hue":0,"sp":1},{"name":"細かい氷の格子（ゆっくり）","v":[0.5,0.2,0.4,1],"pal":0,"hue":0,"sp":0.6}]}]};   // 🎲 バリエーション（正本 glsl\variants.json）
+const GL = {idx:0, mix:0, flow:0, ready:false, face:0, facesVR:QUEST ? 1 : 2, ms:0, renders:0, scene:new T.Scene(), meshes:[],
+  rt:new T.WebGLCubeRenderTarget(LITE ? 384 : 768, {generateMipmaps:false, minFilter:T.LinearFilter, magFilter:T.LinearFilter})};
+GL.cam = new T.CubeCamera(0.1, 20, GL.rt); GL.scene.add(GL.cam);
+const GP = {uPa:{value:PU.uPa.value.clone()}, uPb:{value:PU.uPb.value.clone()}, uPc:{value:PU.uPc.value.clone()}, uPd:{value:PU.uPd.value.clone()}};   // v7: GLSL の世界の色（ふだんはアプリの色・バリエーションで別の色の組）
+const GLU = {uT:{value:0}, uFlow:{value:0}, uHue:{value:0}, uKick:SKY.uKick, uB:{value:new T.Vector3()}, uFrame:SKY.uFrame, uV:{value:new T.Vector4(.5, .5, .5, .5)}, uW:{value:new T.Vector4(.5, .5, .5, .5)}, ...GP};
+// 🎲 バリエーション（v7）: vi = 番号 ／ -1 = ランダム ／ -2 = 名前つきの中から、いまと別のを。別の世界へ入るときは暗いうちに一気に、同じ世界の中ではなめらかに形が変わる
+const VP = GL_VARS.pals.map((p) => ({a:new T.Vector3().fromArray(p.a), b:new T.Vector3().fromArray(p.b), c:new T.Vector3().fromArray(p.c), d:new T.Vector3().fromArray(p.d)}));
+GL.var = {vi:0, name:'基本', v:new T.Vector4(.5, .5, .5, .5), w:new T.Vector4(.5, .5, .5, .5), pal:-1, hue:0, sp:1}; GL.hue = 0; GL.sp = 1; GL.pendVar = null; GL.nVar = 0;
+const glPalOf = () => (GL.var.pal >= 0 ? VP[GL.var.pal] : {a:PU.uPa.value, b:PU.uPb.value, c:PU.uPc.value, d:PU.uPd.value});
+function glVarSpec(vi){
+  const W = GL_VARS.worlds[GL.idx], L = W.list;
+  if (vi === -2){ vi = Math.floor(Math.random() * L.length); if (vi === GL.var.vi && L.length > 1) vi = (vi + 1) % L.length; }
+  if (vi >= 0) return {...L[vi % L.length], vi:vi % L.length};
+  return {vi:-1, name:'🎲 ランダム', v:W.rand.map(([a, b]) => rnd(a, b)), w:[rnd(0.3, 1), .5, .5, .5], pal:Math.floor(Math.random() * (VP.length + 1)) - 1, hue:Math.random(), sp:rnd(0.6, 1.6)};
+}
+function glVarSet(vi, snap){
+  const s = glVarSpec(vi), V = GL.var; V.vi = s.vi; V.name = s.name; V.v.fromArray(s.v); V.w.fromArray(s.w || [.5, .5, .5, .5]); V.pal = s.pal ?? -1; V.hue = s.hue || 0; V.sp = s.sp || 1; GL.nVar++;
+  if (snap){ GLU.uV.value.copy(V.v); GLU.uW.value.copy(V.w); GL.hue = V.hue; GL.sp = V.sp; const P = glPalOf(); GP.uPa.value.copy(P.a); GP.uPb.value.copy(P.b); GP.uPc.value.copy(P.c); GP.uPd.value.copy(P.d); }
+  menuDirty(); hudPC(); return V.name;
+}
+function glVarNext(){   // メニュー「🎲 バリエーション」: 基本 → 名前つき → 🎲 ランダム → 基本 …
+  if (WORLDS[WD.i].gl == null){ toast('🎲 バリエーションは、🧪 GLSL の世界の中で使えます'); return; }
+  const n = GL_VARS.worlds[GL.idx].list.length, vi = GL.var.vi; glVarSet(vi < 0 ? 0 : vi + 1 >= n ? -1 : vi + 1);
+  toast('🎲 ' + WORLDS[WD.i].name.replace('🧪 ', '') + ': ' + GL.var.name + '（速さ ×' + GL.var.sp.toFixed(1) + '）');
+}
+{ const box = new T.BoxGeometry(4, 4, 4);
+  GL_SRC.forEach((src) => {
+    const m = new T.Mesh(box, new T.ShaderMaterial({uniforms:GLU, side:T.BackSide, depthWrite:false, depthTest:false,
+      vertexShader:`varying vec3 vDir; void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+      fragmentShader:`precision highp float;
+uniform float uT, uFlow, uHue, uKick; uniform vec3 uB; uniform mat3 uFrame; uniform vec4 uV, uW; varying vec3 vDir;
+${PAL_GLSL}
+${src}
+void main(){ gl_FragColor = vec4(world(normalize(vDir) * uFrame), 1.); }`}));   // uFrame = 曼荼羅の正面（z = 正面・y = 上）
+    m.frustumCulled = false; GL.scene.add(m); GL.meshes.push(m);
+  });
+  SKY.uCube.value = GL.rt.texture;
+  try { renderer.compileAsync(GL.scene, GL.cam.children[0]).then(() => { GL.meshes.forEach((m, k) => { m.visible = GL.mix > 0.004 && k === GL.idx; }); }).catch(() => {}); } catch (_) {}   // VR に入ってから初めて選んでも、止まらないように先に組み立てておく
+}
+function glTick(dt){
+  { const kv = 1 - Math.exp(-dt * 1.5), V = GL.var, P = glPalOf(); GLU.uV.value.lerp(V.v, kv); GLU.uW.value.lerp(V.w, kv); GL.hue = lerp(GL.hue, V.hue, kv); GL.sp = lerp(GL.sp, V.sp, kv);   // v7: バリエーションへ、なめらかに
+    GP.uPa.value.lerp(P.a, kv); GP.uPb.value.lerp(P.b, kv); GP.uPc.value.lerp(P.c, kv); GP.uPd.value.lerp(P.d, kv); }
+  GL.flow += dt * (0.05 + ZM.sp * 1.2) * flowBase * GL.sp; GLU.uFlow.value = GL.flow; GLU.uT.value = t; GLU.uHue.value = t * 0.004 + GL.hue; GLU.uB.value.set(SW.bands[0], SW.bands[1], SW.bands[2]);
+  if (GL.mix < 0.004) return;
+  GL.meshes.forEach((m, k) => { m.visible = k === GL.idx; });
+  const t0 = performance.now();
+  if (!GL.ready){ GL.cam.update(renderer, GL.scene); GL.ready = true; }   // はじめの 1 回は 6 面ぜんぶ（面の向きの準備も、ここで）
+  else {
+    const xrE = renderer.xr.enabled, prev = renderer.getRenderTarget(), n = xrOn() ? GL.facesVR : (LITE ? 2 : 6); renderer.xr.enabled = false;
+    for (let k = 0; k < n; k++){ const f = GL.face; GL.face = (GL.face + 1) % 6; renderer.setRenderTarget(GL.rt, f); renderer.render(GL.scene, GL.cam.children[f]); }
+    renderer.setRenderTarget(prev); renderer.xr.enabled = xrE;
+  }
+  GL.renders++; GL.ms = lerp(GL.ms, performance.now() - t0, 0.1);
+}
+
+/* ---- メニューの板（VR = B ／ PC = M）: 光線を当てて、トリガー（PC はクリック）で選ぶ ---- */
+const MB = {open:false, hot:-1, hotBy:null, dirty:true, W:1024, H:1800, cv:document.createElement('canvas'), mesh:null, tex:null};
+MB.cv.width = MB.W; MB.cv.height = MB.H; MB.tex = new T.CanvasTexture(MB.cv); MB.tex.colorSpace = T.SRGBColorSpace;
+MB.mesh = new T.Mesh(new T.PlaneGeometry(1, MB.H / MB.W), new T.MeshBasicMaterial({map:MB.tex, transparent:true, depthTest:false, depthWrite:false, toneMapped:false}));
+MB.mesh.renderOrder = 60; MB.mesh.visible = false; scene.add(MB.mesh);
+MB.items = [
+  {id:'show', label:() => SW.on ? '🎆 ショー: 入（' + (SW.song ? '曲' : '自分の音') + '）' : '🎆 ショー: 切（拍で場面が変わる）', on:() => SW.on, act:() => showSet(!SW.on)},
+  {id:'song', label:() => SW.loading ? '🎼 曲を読んでいます…' : SW.song ? '🎵 曲:「' + SW.title + '」' : '🎵 曲で演出（曲をえらぶ）', on:() => !!SW.song, act:() => songMenu()},
+  {id:'drop', label:() => '⚡ 見せ場（いますぐ）', on:() => false, act:() => { menuToggle(false); showBig(true); }},
+  {id:'world', label:() => '🌌 世界: ' + WORLDS[WD.i].name, on:() => WD.i > 0, act:() => worldSet(WD.i + 1)},
+  {id:'glw', label:() => { const g = WORLDS[WD.i].gl; return '🧪 GLSL の世界: ' + (g != null ? WORLDS[WD.i].name.replace('🧪 ', '') + '（' + (g + 1) + '/' + GL_SRC.length + '）' : '切（押すと入る）'); }, on:() => WORLDS[WD.i].gl != null, act:() => glNext()},   // v6: GLSL の世界だけを順に
+  {id:'glvar', label:() => WORLDS[WD.i].gl != null ? '🎲 バリエーション: ' + GL.var.name : '🎲 バリエーション（🧪 の世界で）', on:() => WORLDS[WD.i].gl != null && GL.var.vi !== 0, act:() => glVarNext()},   // v7: 色・形・速さちがい
+  {id:'zoom', label:() => '🔭 ズーム: ' + ZM.names[ZM.mode], on:() => ZM.mode !== 'auto', act:() => zoomNext()},
+  {id:'julia', label:() => '🌺 虚数の花: ' + (ZM.julOn ? '入' : '切'), on:() => ZM.julOn, act:() => juliaSet(!ZM.julOn)},
+  {id:'front', label:() => '🧭 曼荼羅を正面に', on:() => false, act:() => frameSet()},
+  {id:'beat', label:() => '🥁 鼓動: ' + BEAT.names[BEAT.idx], on:() => BEAT.idx > 0, act:() => beatSet(BEAT.idx + 1)},
+  {id:'loop', label:() => ({off:'🔁 ループ: 録る', rec:'🔴 録音中 → 回す', play:'🔁 回っている → 重ねる', dub:'🔴 重ね録り中 → 戻る'})[LOOP.st], on:() => LOOP.st !== 'off', act:() => loopToggle()},
+  {id:'loopclear', label:() => '🗑 ループを消す', on:() => false, act:() => loopClear()},
+  {id:'gaze', label:() => '🌸 見つめると咲く: ' + (GZ.on ? '入' : '切'), on:() => GZ.on, act:() => gazeSet(!GZ.on)},
+  {id:'bells', label:() => '🔔 空中の鐘: ' + (TB.on ? '入' : '切'), on:() => TB.on, act:() => bellsSet(!TB.on)},
+  {id:'mirror', label:() => '🪞 鏡の分身: ' + (MIR.n ? MIR.n + ' 人' : 'なし'), on:() => MIR.n > 0, act:() => mirSet(MIR.next())},
+  {id:'tunnel', label:() => '🌀 トンネル: ' + (TUN.on ? '入' : '切'), on:() => TUN.on, act:() => tunSet(!TUN.on)},
+  {id:'shape', label:() => '✨ 星くずの形: ' + SH.names[SH.mode], on:() => SH.mode > 0, act:() => shapeSet(SH.mode + 1)},
+  {id:'breath', label:() => '🫧 呼吸の玉: ' + (BR.on ? '入' : '切'), on:() => BR.on, act:() => breathSet(!BR.on)},
+  {id:'journey', label:() => JR.on ? '🚀 旅をやめる（残り ' + jrLeft() + '）' : '🚀 旅に出る（8 分）', on:() => JR.on, act:() => journeyToggle()},
+  {id:'base', label:() => '🎵 基音: ' + A.base + 'Hz', on:() => false, act:() => setBase(A.base === 432 ? 528 : 432)},
+  {id:'auto', label:() => '🎐 自動演奏: ' + (A.auto ? '入' : '切'), on:() => A.auto, act:() => toggleAuto()},
+  ...(window.DIVE_TOKEN && !APP ? [{id:'netdive', label:() => '🚪 NET DIVE へ戻る', on:() => false, act:() => { toast('🚪 NET DIVE へ戻ります（着いたら Enter で VR）'); setTimeout(() => { location.href = '/'; }, 700); }}] : []),   // NET DIVE の係から開いたときだけ
+  {id:'help', label:() => '？ 操作の説明', on:() => false, act:() => { menuToggle(false); if (xrOn()) showHud(true, false); else toggleHelp(); }},
+  {id:'close', label:() => '✕ 閉じる', on:() => false, act:() => menuToggle(false)},
+];
+MB.main = MB.items;   // 「曲をえらぶ」のページから戻る先
+const mbRect = (i) => ({x:30 + (i % 2) * 492, y:120 + Math.floor(i / 2) * 126, w:472, h:110});
+function menuDirty(){ MB.dirty = true; }
+function drawMenu(){
+  const x = MB.cv.getContext('2d'); x.clearRect(0, 0, MB.W, MB.H);
+  x.fillStyle = 'rgba(8,0,20,.82)'; x.beginPath(); x.roundRect(4, 4, MB.W - 8, MB.H - 8, 40); x.fill(); x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 3; x.stroke();
+  const g = x.createLinearGradient(200, 0, 820, 0); g.addColorStop(0, '#ff4fd8'); g.addColorStop(0.35, '#ffd84f'); g.addColorStop(0.7, '#4ff2ff'); g.addColorStop(1, '#a64fff');
+  x.fillStyle = g; x.font = '900 54px "Noto Sans JP", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(MB.items === MB.main ? 'TRANCE BLOOM ・ メニュー' : '🎵 曲をえらぶ（選ぶとショーになる）', MB.W / 2, 62);
+  MB.items.forEach((it, i) => {
+    const r = mbRect(i), on = it.on(), hot = i === MB.hot;
+    x.fillStyle = hot ? 'rgba(255,255,255,.34)' : on ? 'rgba(79,242,255,.26)' : 'rgba(255,255,255,.09)'; x.beginPath(); x.roundRect(r.x, r.y, r.w, r.h, 24); x.fill();
+    if (on){ x.strokeStyle = 'rgba(79,242,255,.9)'; x.lineWidth = 4; x.stroke(); }
+    x.fillStyle = '#fff'; x.font = 'bold 34px "Noto Sans JP", sans-serif'; x.textAlign = 'left'; x.fillText(it.label(), r.x + 22, r.y + 57, r.w - 40);
+  });
+  x.fillStyle = 'rgba(255,255,255,.7)'; x.font = '26px "Noto Sans JP", sans-serif'; x.textAlign = 'center'; x.fillText(xrOn() ? '光線を当てて トリガー = 選ぶ ／ B = 閉じる' : TOUCH ? 'タップ = 選ぶ ／ ☰ = 閉じる' : 'クリック = 選ぶ ／ M = 閉じる', MB.W / 2, MB.H - 24);
+  MB.tex.needsUpdate = true; MB.dirty = false;
+}
+function menuToggle(on){
+  MB.open = on === undefined ? !MB.open : !!on; MB.hot = -1; if (!MB.open && MB.main) MB.items = MB.main;
+  if (MB.open){ if (!xrOn() && !GYRO.on){ camPitch = camPitchWant = 0; camera.rotation.x = 0; camera.updateMatrixWorld(); }   // 画面では、まっすぐ前を向き直してから板を出す（スマホで上下を見ていても、板が画面に収まる）
+    drawMenu(); placeFront(MB.mesh, xrOn() ? 1.25 : 2.3, xrOn() ? -0.12 : -0.05); MB.mesh.scale.setScalar(xrOn() ? 0.9 : 1.15); }
+  MB.mesh.visible = MB.open;
+}
+const _mrc = new T.Raycaster();
+function handRay(h){
+  if (xrOn() || h.inj){ _mrc.ray.origin.copy(h.pos); _mrc.ray.direction.set(0, 0, -1).applyQuaternion(h.q); return true; }
+  if (h.side === 'right'){ _ndc.set(mouse.x, mouse.y); _mrc.setFromCamera(_ndc, camera); return true; }
+  return false;
+}
+function menuTouch(h){   // この手が板を指しているか（指していれば true）。指した瞬間にトリガー = 押す
+  if (!handRay(h)) return false;
+  const hit = _mrc.intersectObject(MB.mesh, false)[0];
+  h.rayLen = hit ? hit.distance : 3;
+  if (!hit){ if (MB.hotBy === h && MB.hot !== -1){ MB.hot = -1; MB.dirty = true; } return false; }
+  const px = hit.uv.x * MB.W, py = (1 - hit.uv.y) * MB.H;
+  let idx = -1; MB.items.forEach((_, i) => { const r = mbRect(i); if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) idx = i; });
+  if (idx !== MB.hot){ MB.hot = idx; MB.hotBy = h; MB.dirty = true; if (idx >= 0) buzz(h, 0.12, 8); }
+  if (h.trig && !h.trigPrev && idx >= 0){ MB.items[idx].act(); tick(); buzz(h, 0.5, 30); MB.dirty = true; }
+  return true;
+}
+for (const h of hands){ h.ray = new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(), new T.Vector3(0, 0, -1)]), new T.LineBasicMaterial({color:0xffffff, transparent:true, opacity:0.55, depthTest:false})); h.ray.renderOrder = 61; h.ray.visible = false; scene.add(h.ray); }
+function menuTick(){
+  if (MB.open && MB.dirty) drawMenu();
+  for (const h of hands){ const v = MB.open && h.on && (xrOn() || h.inj); h.ray.visible = v; if (v){ h.ray.position.copy(h.pos); h.ray.quaternion.copy(h.q); h.ray.scale.set(1, 1, h.rayLen || 3); } }
+}
+
+/* ============ 12. はじめる ／ VR に入る ============ */
+function startPC(){
+  if (!started) frameSet('now');   // 曼荼羅の中心 = はじめに向いている正面
+  audioInit(); started = true; $('ui').classList.add('hide'); $('corner').style.display = 'flex'; $('pcBtn').textContent = '▶ つづける';
+  hudPC(); toast(TOUCH ? 'タップ = 鐘と波紋 ／ なぞる = 見まわす ／ 長押し = 吸いよせる ／ ☰ = メニュー' : 'クリック = 鐘と波紋 ／ 右ボタンを押したまま = 星くずを吸いよせる ／ M = メニュー ／ H = 説明');
+  if (SW.picked.length && !SW.song) songPlay(null, SW.picked[SW.picked.length - 1]);   // はじめる前に選んだ曲
+}
+let vrBusy = false;
+const DIVE_BORN = String(Date.now());
+const diveCall = (name, arg) => fetch('/api/' + name, {method:'POST', headers:{'Content-Type':'application/json', 'X-Dive-Token':window.DIVE_TOKEN, 'X-Dive-Born':DIVE_BORN}, body:JSON.stringify({arg})}).then((r) => (r.ok ? r.json() : null)).catch(() => null);   // NET DIVE の係へのお願い（合言葉つき）
+async function enterVR(){
+  if (!navigator.xr || vrBusy || renderer.xr.isPresenting) return;   // もう VR の中・頼んでいる最中なら、何もしない
+  vrBusy = true; audioInit(); $('vrMsg').style.display = 'none';
+  try {
+    if (window.DIVE_TOKEN && await diveCall('endOtherXR')) await new Promise((r) => setTimeout(r, 1500));   // NET DIVE（ほかのタブ）が VR 中なら、先に抜けてもらう
+    const s = await navigator.xr.requestSession('immersive-vr', {optionalFeatures:['local-floor', 'bounded-floor']});
+    await renderer.xr.setSession(s);
+    started = true; $('ui').classList.add('hide'); $('corner').style.display = 'flex'; hudPC();
+    setTimeout(() => frameSet(true), 400);   // 曼荼羅の中心 = VR に入って、はじめに向いている正面
+    s.addEventListener('end', () => { for (const h of hands) if (!h.inj) h.on = false; toast('VR から出ました'); });
+    setTimeout(() => showHud(true, true), 700);
+    if (SW.picked.length && !SW.song) setTimeout(() => songPlay(null, SW.picked[SW.picked.length - 1]), 1200);   // 入る前に選んだ曲
+  } catch (e) {
+    const m = String(e.message || e), busy = /existing immersive session/i.test(m);
+    const msg = busy ? '🥽 ほかのタブが VR を使っています（NET DIVE や、前に開いた TRANCE BLOOM のタブなど）。そのタブで VR から出るか、タブを閉じてから、もう一度「VR に入る」を押してください。'
+      : '🥽 VR に入れませんでした: ' + m + '（Meta Quest のブラウザで開いているかを見てから、もう一度）';
+    $('ui').classList.remove('hide'); $('vrMsg').textContent = msg; $('vrMsg').style.display = ''; toast(busy ? '🥽 ほかのタブが VR を使っています' : '🥽 VR に入れませんでした');
+  } finally { vrBusy = false; }
+}
+async function vrCheck(){
+  let ok = false; try { ok = !!(await navigator.xr?.isSessionSupported('immersive-vr')); } catch (_) {}
+  const b = $('vrBtn'); b.disabled = !ok;
+  b.textContent = ok ? '🥽 VR に入る' : '🥽 VR は Meta Quest のブラウザで（この画面は PC・スマホ用）'; if (!ok && TOUCH) b.style.display = 'none';   // スマホでは、VR のボタンは出さない（説明に書いてある）
+  $('vrBtn2').style.display = ok ? '' : 'none';
+  if (!ok && navigator.xr) setTimeout(vrCheck, 4000);   // SteamVR が後から立ち上がっても、気づけるように
+}
+navigator.xr?.addEventListener?.('devicechange', vrCheck);
+vrCheck();
+if (APP) setTimeout(() => { if (!started) startPC(); }, 400);   // アプリの窓（ふつう）: 開いたらすぐ始まる（窓の音はクリックなしで鳴る）
+if (VRQ){ $('vrMsg').textContent = '🥽 VR で開きました: ゴーグルをかぶって、Enter（か V）か「VR に入る」で入れます（SteamVR が起きるまで、10 秒ほどかかることがあります）'; $('vrMsg').style.display = ''; }
+addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === 'v' || e.key === 'V') && !renderer.xr.isPresenting && !$('vrBtn').disabled && e.target.tagName !== 'INPUT'){ e.preventDefault(); enterVR(); } });   // ゴーグルをかぶったままでも、Enter か V で VR に入れる
+$('pcBtn').onclick = startPC; $('vrBtn').onclick = enterVR; $('vrBtn2').onclick = enterVR; $('helpBtn').onclick = toggleHelp;
+$('menuBtn').onclick = () => { idle = 0; menuToggle(); }; $('songBtn').onclick = () => { idle = 0; songPick(); }; $('songBtn0').onclick = () => songPick(); $('gyroBtn').onclick = gyroToggle;
+if (TOUCH && 'DeviceOrientationEvent' in window) $('gyroBtn').style.display = '';
+window.__web = {WEB, QUEST, TOUCH, LITE, DN, cube:GL.rt.width, facesVR:GL.facesVR, gyro:() => ({...GYRO, q:undefined}), cam:() => ({yaw:+camYaw.toFixed(2), pitch:+camPitch.toFixed(2)}), picked:() => SW.picked.map((f) => f.name)};   // 動作確認用
+
+/* ============ 13. 毎コマ ============ */
+const clock = new T.Clock();
+renderer.setAnimationLoop(() => {
+  try {
+    const dt = Math.min(0.05, clock.getDelta()); t += dt; idle += dt;
+    if (!xrOn()){
+      camYaw = lerp(camYaw, camYawWant, 1 - Math.exp(-dt * 5));
+      camPitch = lerp(camPitch, camPitchWant, 1 - Math.exp(-dt * 6));
+      if (GYRO.on && GYRO.ok) gyroApply(); else camera.rotation.set(camPitch + Math.sin(t * 0.13) * 0.03, camYaw + Math.sin(t * 0.07) * 0.04, 0, 'YXZ');   // PC の画面: ほんの少しだけ漂う
+      DU.uPix.value = renderer.domElement.height / (2 * Math.tan(camera.fov * Math.PI / 360));
+    } else DU.uPix.value = 820;
+    camera.updateMatrixWorld(); headPose();
+    readInput();
+    for (const h of hands){ handTick(h, dt); padTick(h, dt); trailTick(h); }
+    bothTick(dt); autoTick(); palTick(dt);
+    beatTick(dt); loopTick(); gazeTick(dt); bellsTick(dt); mirTick(); tunTick(dt); breathTick(dt); journeyTick(dt); menuTick(); showTick(dt);
+    SH.k = lerp(SH.k, SH.mode ? 1 : 0, 1 - Math.exp(-dt * (SW.on ? 1.6 : 0.7))); SKY.uKick.value = kickV; zoomTick(dt); worldTick(dt); SKY.uDim.value = dimV * frameTick(dt) * SW.dimV; if (SW.on) DU.uBoost.value = Math.min(DU.uBoost.value, 1.3) * SW.boost;
+    breath = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 / 10);   // 10 秒で 1 回の呼吸（明るさと、ざわめきが、いっしょにふくらむ）
+    burst = Math.max(0, burst - dt * 0.7); FLOOR.uE.value = Math.max(0, FLOOR.uE.value - dt * 0.8);
+    ft += dt * flowBase * (1 + warp * 3.5);
+    SKY.uT.value = t; SKY.uFT.value = ft; SKY.uBreath.value = breath; SKY.uWarp.value = warp; SKY.uBurst.value = burst; SKY.uDens.value = dens; SKY.uKal.value = kal;
+    sky.position.copy(head);   // 空は、いつも頭のまわり（無限に遠く見える）
+    shapeFrame(); dustTick(dt); sparkTick(dt); ripTick(); textTick(dt); audioTick(warp, breath);
+    glTick(dt); renderer.render(scene, camera);
+  } catch (e) { frameErr++; if (frameErr < 5) console.error('frame', e); }
+});
+
+/* ============ 14. 動作確認用 ============ */
+window.__tb = {
+  start:startPC,
+  state:() => { let se = 0; if (SH.mode) for (let i = 0; i < 500; i++){ const j = i * 36, a = j * 3; se += Math.hypot(dPos[a] - SH.tgt[a], dPos[a + 1] - SH.tgt[a + 1], dPos[a + 2] - SH.tgt[a + 2]) / 500; }
+    return {t:+t.toFixed(2), started, mode:A.mode, pal:palIdx, base:A.base, auto:A.auto, kal, warp:+warp.toFixed(2), burst:+burst.toFixed(2), notes:A.notes, voices:A.voices,
+    audio:A.ctx ? A.ctx.state : 'none', rips:rips.filter((r) => t - r.born < 5).length, idle:+idle.toFixed(1), space:+A.space.toFixed(2), flow:+flowBase.toFixed(2),
+    hands:hands.map((h) => ({on:h.on, k:h.k, trig:h.trig, grip:h.grip})), dustE:+(dEn.reduce((a, b) => a + b, 0) / DN).toFixed(4), sparks:sLife.filter((x) => x > 0).length, toast:$('toast').textContent,
+    beat:BEAT.idx, kicks:BEAT.kicks, arp:BEAT.arp, kickV:+kickV.toFixed(2), loop:LOOP.st, loopLen:+LOOP.len.toFixed(2), loopEv:LOOP.ev.length, loopFired:LOOP.fired, blooms:GZ.count, gaze:GZ.on,
+    bells:TB.on, bellRings:TB.rings, mir:MIR.n, mirVis:hands[1].mir.filter((c) => c.sp.visible).length, tun:TUN.on, tunA:+TUN.a.toFixed(2), shape:SH.mode, shapeErr:+se.toFixed(2), breathOn:BR.on,
+    jr:JR.on, jrT:+JR.t.toFixed(1), jrI:JR.i, dim:+dimV.toFixed(2), world:WD.i, sky:+WD.sky.toFixed(2), zm:ZM.mode, zsp:+ZM.sp.toFixed(3), zph:+ZM.ph.toFixed(2), polar:+SKY.uPolar.value.toFixed(2), flower:+WD.flower.toFixed(2), jul:+ZM.jul.toFixed(2), far:+WD.far.toFixed(2), frame:[...SKY.uFrame.value.elements].map((x) => +x.toFixed(2)), storm:JR.storm, kc:JR.kc, menuN:MB.items.length, menu:MB.open, menuHot:MB.hot, hud:$('hud').textContent, ...showState(), glMix:+GL.mix.toFixed(2), glIdx:GL.idx, glMs:+GL.ms.toFixed(2), glRenders:GL.renders, glVar:GL.var.name, glVi:GL.var.vi, glNVar:GL.nVar, glSp:+GL.sp.toFixed(2), glV:GLU.uV.value.toArray().map((x) => +x.toFixed(2))}; },
+  hand:(i, o) => { const h = hands[i]; h.inj = true; h.on = o.on !== false; if (o.pos) h.pos.fromArray(o.pos); if (o.q) h.q.fromArray(o.q); if ('trig' in o) h.trig = !!o.trig; if ('grip' in o) h.grip = !!o.grip; if (o.stick) h.stick = o.stick; if (o.btn) h.btn = o.btn; if ('sp' in o) h.sp = !!o.sp; },
+  free:() => { for (const h of hands){ h.inj = false; h.trig = h.grip = false; h.stick = [0, 0]; h.btn = [false, false]; } },
+  idle:(s) => { idle = s; },
+  menu:(on) => menuToggle(on), press:(id) => { const it = MB.items.find((x) => x.id === id); if (it) it.act(); },
+  menuAt:(id) => { const i = MB.items.findIndex((x) => x.id === id), r = mbRect(i), p = new T.Vector3((r.x + r.w / 2) / MB.W - 0.5, (0.5 - (r.y + r.h / 2) / MB.H) * MB.H / MB.W, 0); MB.mesh.updateMatrixWorld(); MB.mesh.localToWorld(p); const w = p.clone(); p.project(camera); return {x:Math.round((p.x + 1) / 2 * innerWidth), y:Math.round((1 - p.y) / 2 * innerHeight), w:w.toArray()}; },
+  bellPos:(i) => TB.items[i].g.position.toArray(),
+  zoom:(m) => zoomSet(m), julia:(on) => juliaSet(on), front:() => frameSet(), world:(i) => worldSet(i), aw:() => ({n:AW.n, next:AW.next ? +(AW.next - t).toFixed(1) : 0}), idle:(s) => { idle = s; },
+  journeyAt:(s) => { JR.t = s; },
+  show:(on) => showSet(on), big:() => showBig(true), showAt:(n) => { SW.step = n * 64; }, songs:() => songScan().then((l) => l.map((x) => x.name)), song:(i) => songScan().then((l) => songPlay(l[i])), songStop:() => songStop(), songPage:() => songMenu(),
+  gl:(i) => worldSet(5 + i), glvar:(i) => glVarSet(i), glnext:() => glVarNext(), shape:(m, w) => shapeSet(m, true, w), fw:(n) => { showFrame(); for (let k = 0; k < (n || 1); k++) fwLaunch(null, k * 0.3); }, confetti:() => { showFrame(); confetti(6); }, showState,
+};
+</script>
+</body>
+</html>
